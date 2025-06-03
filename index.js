@@ -9,7 +9,7 @@ app.get('/', (req, res) => {
         .end();
 });
 
-app.all('*', (req, res) => {
+app.all(/(.*)/, (req, res) => {
     res.redirect("https://youtu.be/dQw4w9WgXcQ");
 });
 
