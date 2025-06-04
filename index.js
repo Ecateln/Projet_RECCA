@@ -1,8 +1,13 @@
 import express from 'express';
-import { createServer } from 'http';
-import { Server } from "socket.io";
 import path from 'path';
+
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import { askAgent } from './util/functions.js';
+import { pgp } from './util/globals.js';
+import { initializeDatabase } from './util/database.js';
+
+await initializeDatabase();
 
 // import { askAgent } from './util/functions.js';
 // const msgs = [];
@@ -90,8 +95,6 @@ socket_server.on('connection', (socket) => {
     });
 });
 
-const port = 8001;
-
 app.use('/static', express.static(path.join('public')));
 
 app.get('/', (req, res) => {
@@ -99,6 +102,8 @@ app.get('/', (req, res) => {
         .send("Hello World :)")
         .end();
 });
+
+// TODO: register/login with tokens with expirartion
 
 app.get('/test', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html'));
@@ -109,7 +114,21 @@ app.all(/(.*)/, (req, res) => {
 });
 
 // Start server
+const port = 8001;
 server.listen(
     port,
     () => console.log(`Server running on http://localhost:${port}`),
 );
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\nShutting down gracefully...');
+    pgp.end();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\nShutting down gracefully...');
+    pgp.end();
+    process.exit(0);
+});
