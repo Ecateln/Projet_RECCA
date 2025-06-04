@@ -104,9 +104,9 @@ app.get('/test', (req, res) => {
     res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html'));
 });
 
-// app.all(/(.*)/, (req, res) => {
-//     res.redirect("https://youtu.be/dQw4w9WgXcQ");
-// });
+app.all(/(.*)/, (req, res) => {
+    res.redirect("https://youtu.be/dQw4w9WgXcQ");
+});
 
 // Start server
 server.listen(
