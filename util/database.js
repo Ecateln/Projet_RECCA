@@ -32,6 +32,14 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        await db.none(`
+            CREATE TABLE IF NOT EXISTS tokens (
+                value TEXT PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                expires_at TIMESTAMP NOT NULL
+            )
+        `);
     } catch (error) {
         console.error('Error during database initialization:', error.message);
         return;
@@ -39,7 +47,6 @@ async function initializeDatabase() {
 
     console.log('Database initialization complete!');
 }
-
 
 // INSERT USER
 async function createUser(username, passwordHash) {
@@ -53,6 +60,21 @@ async function createUser(username, passwordHash) {
         return user;
     } catch (error) {
         console.error('Error creating user:', error.message);
+    }
+}
+
+// INSERT TOKEN
+async function createToken(value, userId, expiresAt) {
+    try {
+        const token = await db.one(`
+            INSERT INTO tokens (value, user_id, expires_at)
+            VALUES ($1, $2, $3)
+            RETURNING value, user_id, expires_at
+        `, [value, userId, expiresAt]);
+        console.log('Token created:', token);
+        return token;
+    } catch (error) {
+        console.error('Error creating token:', error.message);
     }
 }
 
@@ -183,9 +205,10 @@ async function getFullConversation(conversationId) {
 export {
     initializeDatabase,
     createUser,
+    createToken,
+    createConversation,
     getUserById,
     getUserByUsername,
-    createConversation,
     getUserConversations,
     addMessage,
     getConversationMessages,

@@ -3,7 +3,7 @@ import path from 'path';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { askAgent } from './util/functions.js';
+import { askAgent, generateToken } from './util/functions.js';
 import { pgp } from './util/globals.js';
 import { initializeDatabase } from './util/database.js';
 
@@ -24,6 +24,9 @@ await initializeDatabase();
 const app = express();
 const server = createServer(app);
 const socket_server = new Server(server);
+
+app.use(express.json());
+app.use('/static', express.static(path.join('public')));
 
 socket_server.on('connection', (socket) => {
     socket.user_data = null;
@@ -95,23 +98,47 @@ socket_server.on('connection', (socket) => {
     });
 });
 
-app.use('/static', express.static(path.join('public')));
+app.get('/', (req, res) => res.status(200).send("Hello World :)").end());
 
-app.get('/', (req, res) => {
-    res.status(200)
-        .send("Hello World :)")
-        .end();
+// TODO: register/login with tokens with expiration
+app.post('/login', (req, res) => {
+    const body = req.body;
+    if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
+        return res.status(400)
+                .send('Invalid request body')
+                .end();
+
+    // TODO: validate login data, generate token, and save it in the database
+    // const token = generateToken();
+
+    res.status(404).end();
 });
 
-// TODO: register/login with tokens with expirartion
+app.post('/register', (req, res) => {
+    const body = req.body;
+    if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
+        return res.status(400)
+                .send('Invalid request body')
+                .end();
 
-app.get('/test', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html'));
+    if (body.username.length < 2 || body.username.length > 20)
+        return res.status(400)
+            .send('La longueur du nom d\'utilisateur doit être comprise entre 2 et 20 caractères.')
+            .end();
+
+    if (body.password.length < 12 || body.password.length > 64)
+        return res.status(400)
+            .send('La longueur du mot de passe doit être comprise entre 12 et 64 caractères.')
+            .end();
+
+    // TODO: store and hash password, create user in database
+
+    console.log(req.body);
+    res.status(404).end();
 });
 
-app.all(/(.*)/, (req, res) => {
-    res.redirect("https://youtu.be/dQw4w9WgXcQ");
-});
+app.get('/test', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html')));
+app.all(/(.*)/, (req, res) => res.redirect("https://youtu.be/dQw4w9WgXcQ"));
 
 // Start server
 const port = 8001;

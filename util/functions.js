@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 
 async function* askAgent(prompt, previous_messages, think = false, web = false) {
@@ -37,4 +38,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
     previous_messages.push(question, { date: Date.now(), role: 'assistant', content: full_response });
 }
 
-export { askAgent }
+function generateToken() {
+    return randomBytes(64).toString('base64url');
+}
+
+export { askAgent, generateToken }
