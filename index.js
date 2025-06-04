@@ -1,6 +1,8 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from "socket.io";
+import path from 'path';
+
 // import { askAgent } from './util/functions.js';
 // const msgs = [];
 // async function askAndPrint(prompt) {
@@ -14,7 +16,7 @@ import { Server } from "socket.io";
 // process.exit();
 
 const app = express();
-const server = createServer();
+const server = createServer(app);
 const socket_server = new Server(server);
 
 socket_server.on('connection', (socket) => {
@@ -26,6 +28,8 @@ socket_server.on('connection', (socket) => {
 
 const port = 8001;
 
+app.use('/static', express.static(path.join('public')));
+
 app.get('/', (req, res) => {
     res.status(200)
         .send("Hello World :)")
@@ -35,13 +39,34 @@ app.get('/', (req, res) => {
 app.get('/test_socket', (req, res) => {
     res.status(200)
         .send(`
-<script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
-<script>
-const io = require("socket.io-client");
-const socket = io();
-</script>
-<h1>Socket.IO Test</h1>
-<p>Open your browser console to see the connection logs.</p>`)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+</head>
+<body>
+    <h1>Socket.IO Test</h1>
+    <p>Open your browser console to see the connection logs.</p>
+    <div id="status">Connecting...</div>
+
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected to Socket.IO server');
+            document.getElementById('status').textContent = 'Connected to Socket.IO server!';
+            document.getElementById('status').style.color = 'green';
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from Socket.IO server');
+            document.getElementById('status').textContent = 'Disconnected from Socket.IO server';
+            document.getElementById('status').style.color = 'red';
+        });
+    </script>
+</body>
+</html>`)
         .end();
 });
 
@@ -50,7 +75,7 @@ const socket = io();
 // });
 
 // Start server
-app.listen(
+server.listen(
     port,
     () => console.log(`Server running on http://localhost:${port}`),
 );
