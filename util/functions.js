@@ -2,6 +2,7 @@ import { ollama } from './globals.js';
 
 async function* askAgent(prompt, previous_messages, think = false, web = false) {
     // TODO: web requests
+    // TODO: if no previous messages, append base prompt to the current prompt
 
     const question = { date: Date.now(), role: 'user', content: prompt };
     const response = await ollama.chat({
