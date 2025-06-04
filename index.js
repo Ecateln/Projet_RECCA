@@ -77,12 +77,6 @@ socket_server.on('connection', (socket) => {
         for await (const token of response_stream)
             socket.emit("res", token);
 
-        // Add the user message and assistant response to the conversation
-        // socket.user_data.current_conversation.messages.push(
-        //     { date: Date.now(), role: 'user', content: prompt },
-        //     { date: Date.now(), role: 'assistant', content: fullResponse }
-        // );
-
         socket.user_data.active_query = false;
         socket.emit("res", null);
 
