@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+</head>
+<body>
+    <h1>Socket.IO Test</h1>
+    <p>Open your browser console to see the connection logs.</p>
+    <div id="status">Connecting...</div>
+
+    <script src="/static/js/socket-io.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected to Socket.IO server');
+            document.getElementById('status').textContent = 'Connected to Socket.IO server!';
+            document.getElementById('status').style.color = 'green';
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from Socket.IO server');
+            document.getElementById('status').textContent = 'Disconnected from Socket.IO server';
+            document.getElementById('status').style.color = 'red';
+        });
+    </script>
+</body>
+</html>

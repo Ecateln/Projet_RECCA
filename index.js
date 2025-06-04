@@ -20,7 +20,9 @@ const server = createServer(app);
 const socket_server = new Server(server);
 
 socket_server.on('connection', (socket) => {
-    console.log('A user connected');
+    // TODO: handle authentication
+    
+
     socket.on('disconnect', () => {
         console.log('A user disconnected');
     });
@@ -33,40 +35,6 @@ app.use('/static', express.static(path.join('public')));
 app.get('/', (req, res) => {
     res.status(200)
         .send("Hello World :)")
-        .end();
-});
-
-app.get('/test_socket', (req, res) => {
-    res.status(200)
-        .send(`
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Socket.IO Test</title>
-</head>
-<body>
-    <h1>Socket.IO Test</h1>
-    <p>Open your browser console to see the connection logs.</p>
-    <div id="status">Connecting...</div>
-
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-    <script>
-        const socket = io();
-
-        socket.on('connect', () => {
-            console.log('Connected to Socket.IO server');
-            document.getElementById('status').textContent = 'Connected to Socket.IO server!';
-            document.getElementById('status').style.color = 'green';
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected from Socket.IO server');
-            document.getElementById('status').textContent = 'Disconnected from Socket.IO server';
-            document.getElementById('status').style.color = 'red';
-        });
-    </script>
-</body>
-</html>`)
         .end();
 });
 
