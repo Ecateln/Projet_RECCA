@@ -30,6 +30,7 @@ socket_server.on('connection', (socket) => {
         // TODO: handle proper authentication
 
         socket.user_data = {
+            active_query: false,
             conversations: [{
                 id: "0", // Date.now().toString(),
                 title: 'Conversation with Barbara',
@@ -70,15 +71,11 @@ socket_server.on('connection', (socket) => {
         if (socket.active_query) return socket.emit("error", "Une réponse est déjà en cours.");
         if (!socket.user_data.current_conversation) return socket.emit("error", "Aucune conversation sélectionnée.");
 
-        socket.active_query = true;
+        socket.user_data.active_query = true;
 
-        let fullResponse = '';
         const response_stream = askAgent(prompt, socket.user_data.current_conversation.messages);
-        
-        for await (const tok of response_stream) {
-            socket.emit("res", tok);
-            fullResponse += tok;
-        }
+        for await (const token of response_stream)
+            socket.emit("res", token);
 
         // Add the user message and assistant response to the conversation
         // socket.user_data.current_conversation.messages.push(
@@ -86,7 +83,7 @@ socket_server.on('connection', (socket) => {
         //     { date: Date.now(), role: 'assistant', content: fullResponse }
         // );
 
-        socket.active_query = false;
+        socket.user_data.active_query = false;
         socket.emit("res", null);
 
         console.log('Updated conversation:', socket.user_data.current_conversation);
