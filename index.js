@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { askAgent, generateToken, hashPassword, verifyPassword } from './util/functions.js';
 import { pgp } from './util/globals.js';
-import { createToken, createUser, getUserByUsername, initializeDatabase, isUsernameFree } from './util/database.js';
+import { createToken, createUser, getUserByToken, getUserByUsername, initializeDatabase, isUsernameFree } from './util/database.js';
 
 await initializeDatabase();
 
@@ -31,11 +31,19 @@ app.use('/static', express.static(path.join('public')));
 socket_server.on('connection', (socket) => {
     socket.user_data = null;
 
-    socket.on('login', (token) => {
+    socket.on('login', async (token) => {
         if (typeof token !== "string") return;
         if (socket.user_data) return socket.disconnect();
 
-        // TODO: handle proper authentication
+        const user_data = await getUserByToken(token);
+        if (!user_data) {
+            socket.emit('login_failed', 'Token invalide ou expiré.');
+            return socket.disconnect();
+        }
+
+        // TODO: load conversations
+
+        return console.log(user_data);
 
         socket.user_data = {
             active_query: false,

@@ -40,6 +40,33 @@ async function initializeDatabase() {
                 expires_at TIMESTAMP NOT NULL
             )
         `);
+
+        // Create trigger function to clean up expired tokens
+        await db.none(`
+            CREATE OR REPLACE FUNCTION cleanup_expired_tokens()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                -- Delete expired tokens (older than current timestamp)
+                DELETE FROM tokens WHERE expires_at < CURRENT_TIMESTAMP;
+
+                -- Log the cleanup (optional)
+                RAISE NOTICE 'Expired tokens cleanup executed. Deleted % tokens.', 
+                    (SELECT COUNT(*) FROM tokens WHERE expires_at < CURRENT_TIMESTAMP);
+
+                -- Return the new row (for INSERT/UPDATE triggers)
+                RETURN COALESCE(NEW, OLD);
+            END;
+            $$ LANGUAGE plpgsql;
+        `);
+
+        // Create trigger that runs on INSERT to tokens table
+        await db.none(`
+            DROP TRIGGER IF EXISTS trigger_cleanup_expired_tokens_on_insert ON tokens;
+            CREATE TRIGGER trigger_cleanup_expired_tokens_on_insert
+                AFTER INSERT ON tokens
+                FOR EACH STATEMENT
+                EXECUTE FUNCTION cleanup_expired_tokens();
+        `);
     } catch (error) {
         console.error('Error during database initialization:', error.message);
         process.exit(1);
@@ -101,6 +128,21 @@ async function getUserByUsername(username) {
         return user;
     } catch (error) {
         console.error('Error getting user by username:', error.message);
+    }
+}
+
+// GET USER BY TOKEN
+async function getUserByToken(token) {
+    try {
+        const user = await db.oneOrNone(`
+            SELECT u.id, u.username, u.personalization_info
+            FROM tokens t
+            JOIN users u ON t.user_id = u.id
+            WHERE t.value = $1 AND t.expires_at > CURRENT_TIMESTAMP
+        `, [token]);
+        return user;
+    } catch (error) {
+        console.error('Error getting user by token:', error.message);
     }
 }
 
@@ -226,4 +268,5 @@ export {
     addMessage,
     getConversationMessages,
     getFullConversation,
+    getUserByToken,
 };
