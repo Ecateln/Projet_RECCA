@@ -1,57 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Socket.IO Conversation Test</title>
-    <link rel="stylesheet" media="screen" type="text/css" href="/public/css/testStyle.css"/>
-
-    
+    <link rel="stylesheet" media="screen" type="text/css" href="/public/css/test3Style.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Socket.IO Conversation Test Interface</h1>
-    
     <div class="container">
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="new_chat_button">
-                <a href="#" class="internet">
-                    <span class="switch-label">
-                        <label class="switch">
-                            <input type="checkbox">
-                            <span class="slider round"></span>
-                        </label>
-                        <span class="switch-text">Internet ?</span>
-                    </span>
-                </a>
-                <a href="#" class="new_chat">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-160v-600q0-33 23.5-56.5T200-840h480q33 0 56.5 23.5T760-760v203q-10-2-20-2.5t-20-.5q-10 0-20 .5t-20 2.5v-203H200v400h283q-2 10-2.5 20t-.5 20q0 10 .5 20t2.5 20H240L120-160Zm160-440h320v-80H280v80Zm0 160h200v-80H280v80Zm400 280v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM200-360v-400 400Z"/></svg>Nouveau chat
-                </a>
-                <input type="text" id="token-input" placeholder="Token (any string)" value="test-token">
-                <button id="login-btn" onclick="login()">Login</button>
-            </div>
-            
-            <div class="section">
-                <h3>Conversations</h3>
-                <div id="conversation-list" class="conversation-list">
-                    <div style="color: #666; font-style: italic;">Login first to see conversations</div>
+                <!-- Bouton de rétraction ajouté ici -->
+                <button class="retract-button" onclick="toggleSidebar()" title="Rétracter/Étendre la sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+                        <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm240-80h400v-480H400v480Zm-80 0v-480H160v480h160Zm-160 0v-480 480Zm160 0h80-80Zm0-480h80-80Z"/>
+                    </svg>
+                </button>
+                
+                <div class="sidebar-content">
+                    <label class="internet" for="internetToggle">
+                        <span class="switch-label">
+                            <span class="toggle-wrapper">
+                                <input type="checkbox" id="internetToggle" />
+                                <span class="slider"></span>
+                                <span class="label-text">Internet ?</span>
+                            </span>
+                        </span>
+                    </label>
+                    <a href="#" class="new_chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-160v-600q0-33 23.5-56.5T200-840h480q33 0 56.5 23.5T760-760v203q-10-2-20-2.5t-20-.5q-10 0-20 .5t-20 2.5v-203H200v400h283q-2 10-2.5 20t-.5 20q0 10 .5 20t2.5 20H240L120-160Zm160-440h320v-80H280v80Zm0 160h200v-80H280v80Zm400 280v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM200-360v-400 400Z"/></svg>Nouveau chat
+                    </a>
                 </div>
             </div>
             
-            <div class="section">
-                <h3>Connection Logs</h3>
-                <div id="logs" class="logs"></div>
+            <div class="sidebar-content">
+                <hr>
+                <div class="section">
+                    <h3>Conversations</h3>
+                    <div id="conversation-list" class="conversation-list">
+                        <button>Conversation 1</button>
+                        <button>Conversation 2</button>
+                        <button>Conversation 3</button>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="chat-area">
             <div class="section">
-                <h3>Current Conversation</h3>
-                <div id="messages" class="messages">
-                    <div style="color: #666; font-style: italic;">Select a conversation to start chatting</div>
+                <header class="header">
+                    <h1>Recca</h1>
+                </header>
+                <div class="chat">
+                    <div class="message prompt">
+                        <p>prompt boubouboubouboubouboubouboubou...</p>
+                    </div>
+                    <div class="message response">
+                        <p>réponse fournie par Reccabouboubouboubouboubouboubou...</p>
+                    </div>
                 </div>
             </div>
             
             <div class="input-area">
-                <input type="text" id="message-input" placeholder="Type your message..." disabled>
-                <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
+                <input type="text" id="message-input" placeholder="Type your message..." >
+                <button id="send-btn" onclick="addMessage()" >Send</button>
             </div>
         </div>
     </div>
@@ -62,6 +72,39 @@
         let currentConversation = null;
         let isAuthenticated = false;
         let currentResponse = '';
+        let sidebarRetracted = false;
+        
+        // Fonction pour basculer l'état de la sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebarRetracted = !sidebarRetracted;
+            
+            if (sidebarRetracted) {
+                sidebar.classList.add('retracted');
+            } else {
+                sidebar.classList.remove('retracted');
+            }
+            
+            // Sauvegarder l'état dans le localStorage si disponible
+            try {
+                localStorage.setItem('sidebarRetracted', sidebarRetracted.toString());
+            } catch (e) {
+                // Ignore si localStorage n'est pas disponible
+            }
+        }
+        
+        // Restaurer l'état de la sidebar au chargement
+        function restoreSidebarState() {
+            try {
+                const saved = localStorage.getItem('sidebarRetracted');
+                if (saved === 'true') {
+                    sidebarRetracted = true;
+                    document.getElementById('sidebar').classList.add('retracted');
+                }
+            } catch (e) {
+                // Ignore si localStorage n'est pas disponible
+            }
+        }
         
         // Initialize socket connection
         function initSocket() {
@@ -118,8 +161,10 @@
         
         function updateStatus(type, text) {
             const statusEl = document.getElementById('status');
-            statusEl.className = 'status ' + type;
-            statusEl.textContent = text;
+            if (statusEl) {
+                statusEl.className = 'status ' + type;
+                statusEl.textContent = text;
+            }
         }
         
         function updateUI() {
@@ -128,19 +173,21 @@
             const messageInput = document.getElementById('message-input');
             const sendBtn = document.getElementById('send-btn');
             
-            loginBtn.disabled = isAuthenticated;
-            tokenInput.disabled = isAuthenticated;
-            messageInput.disabled = !currentConversation;
-            sendBtn.disabled = !currentConversation;
+            if (loginBtn) loginBtn.disabled = isAuthenticated;
+            if (tokenInput) tokenInput.disabled = isAuthenticated;
+            if (messageInput) messageInput.disabled = !currentConversation;
+            if (sendBtn) sendBtn.disabled = !currentConversation;
         }
         
         function log(message, type = 'info') {
             const logsEl = document.getElementById('logs');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry ' + type;
-            entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
-            logsEl.appendChild(entry);
-            logsEl.scrollTop = logsEl.scrollHeight;
+            if (logsEl) {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry ' + type;
+                entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+                logsEl.appendChild(entry);
+                logsEl.scrollTop = logsEl.scrollHeight;
+            }
         }
         
         function login() {
@@ -182,38 +229,44 @@
         
         function displayMessages(messages) {
             const messagesEl = document.getElementById('messages');
-            messagesEl.innerHTML = '';
-            
-            messages.forEach(msg => {
-                addMessage(msg.role, msg.content, new Date(msg.date));
-            });
+            if (messagesEl) {
+                messagesEl.innerHTML = '';
+                
+                messages.forEach(msg => {
+                    addMessage(msg.role, msg.content, new Date(msg.date));
+                });
+            }
         }
         
         function addMessage(role, content, date = new Date()) {
             const messagesEl = document.getElementById('messages');
-            const messageEl = document.createElement('div');
-            messageEl.className = 'message ' + role;
-            
-            const timestamp = date.toLocaleTimeString();
-            messageEl.innerHTML = `<strong>${role}:</strong> ${content}<br><small>${timestamp}</small>`;
-            
-            messagesEl.appendChild(messageEl);
-            messagesEl.scrollTop = messagesEl.scrollHeight;
+            if (messagesEl) {
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message ' + role;
+                
+                const timestamp = date.toLocaleTimeString();
+                messageEl.innerHTML = `<strong>${role}:</strong> ${content}<br><small>${timestamp}</small>`;
+                
+                messagesEl.appendChild(messageEl);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
         }
         
         function updateStreamingMessage() {
             const messagesEl = document.getElementById('messages');
-            let streamingEl = messagesEl.querySelector('.streaming-message');
-            
-            if (!streamingEl) {
-                streamingEl = document.createElement('div');
-                streamingEl.className = 'message assistant streaming-message';
-                messagesEl.appendChild(streamingEl);
+            if (messagesEl) {
+                let streamingEl = messagesEl.querySelector('.streaming-message');
+                
+                if (!streamingEl) {
+                    streamingEl = document.createElement('div');
+                    streamingEl.className = 'message assistant streaming-message';
+                    messagesEl.appendChild(streamingEl);
+                }
+                
+                const timestamp = new Date().toLocaleTimeString();
+                streamingEl.innerHTML = `<strong>assistant:</strong> ${currentResponse}<span style="animation: blink 1s infinite;">|</span><br><small>${timestamp}</small>`;
+                messagesEl.scrollTop = messagesEl.scrollHeight;
             }
-            
-            const timestamp = new Date().toLocaleTimeString();
-            streamingEl.innerHTML = `<strong>assistant:</strong> ${currentResponse}<span style="animation: blink 1s infinite;">|</span><br><small>${timestamp}</small>`;
-            messagesEl.scrollTop = messagesEl.scrollHeight;
         }
         
         function sendMessage() {
@@ -241,11 +294,14 @@
         });
         
         // Handle Enter key in token input
-        document.getElementById('token-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
+        const tokenInput = document.getElementById('token-input');
+        if (tokenInput) {
+            tokenInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+        }
         
         // Add CSS for blinking cursor
         const style = document.createElement('style');
@@ -258,8 +314,11 @@
         document.head.appendChild(style);
         
         // Initialize when page loads
-        initSocket();
-        updateUI();
+        window.addEventListener('load', function() {
+            restoreSidebarState();
+            initSocket();
+            updateUI();
+        });
     </script>
 </body>
 </html>
