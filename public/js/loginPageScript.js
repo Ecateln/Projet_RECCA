@@ -166,6 +166,7 @@ function showSuccessNotification() {
         border-left: 4px solid rgb(92, 255, 63);
         border-radius: 8px;
         padding: 15px 20px;
+        margin-right: 20px;
         max-width: 400px;
         width: auto;
         color: white;

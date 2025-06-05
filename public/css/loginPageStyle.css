@@ -78,9 +78,9 @@ input::placeholder {
     transition: all 0.3s ease;
     transform: scale(1);
     letter-spacing: 1px;
-    will-change: transform; /* Optimize for transform animations */
-    backface-visibility: hidden; /* Prevent backface flickering */
-    -webkit-font-smoothing: antialiased; /* Improve font rendering */
+    will-change: transform; 
+    backface-visibility: hidden; 
+    -webkit-font-smoothing: antialiased; 
 }
 
 .colored_button:hover {
@@ -147,4 +147,73 @@ input::placeholder {
     background-position: left;
     background-repeat: no-repeat;
 
+}
+
+/* Media Queries - Responsive Design */
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .image_section {
+        display: none;
+    }
+    
+    .login_section {
+        flex: 1;
+        width: 100%;
+        padding-top: 15vh;
+    }
+    
+    #welcome {
+        font-size: 2.2em;
+        text-align: center;
+    }
+    
+    input {
+        width: 80%;
+        font-size: 1.1rem;
+    }
+    
+    .colored_button {
+        width: 85%;
+        font-size: 1.5rem;
+    }
+}
+
+/* Pour les très petits écrans (smartphones en portrait) */
+@media screen and (max-width: 480px) {
+    .login_section {
+        padding-top: 20vh;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    #welcome {
+        font-size: 1.8em;
+        letter-spacing: 2px;
+    }
+    
+    input {
+        width: 90%;
+        height: 45px;
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+    
+    .colored_button {
+        width: 95%;
+        height: 50px;
+        font-size: 1.3rem;
+    }
+    
+    .register {
+        font-size: 1.1em;
+    }
+    
+    .credits {
+        font-size: 0.8em;
+        bottom: 15px;
+        left: 15px;
+    }
 }
