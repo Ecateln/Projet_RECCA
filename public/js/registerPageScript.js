@@ -132,7 +132,7 @@ function goToLoginPage(){
 let currentNotification = null;
 
 // Function to create an error notification
-function createErrorNotification(message = "Erreur: Tu peux pas t'inscrire vu que t'es gay") {
+function createErrorNotification(message = "Une erreur est survenue") {
     // Remove the current notification if it exists
     if (currentNotification && document.body.contains(currentNotification)) {
         document.body.removeChild(currentNotification);
