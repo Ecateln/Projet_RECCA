@@ -1,4 +1,4 @@
-/* Login Page Recca - Style
+/* Register Page Recca - Style
    Code by Sagnard Elouan and Sanchez Adam */
 
 body {
@@ -7,14 +7,14 @@ body {
 }
 
 /* Left Section */
-.login_section{
+.register_section {
     flex: 1;
     background-color: #0f0f0f;
     color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 21vh;
+    padding-top: 16vh;
     position: relative;
     
 }
@@ -51,7 +51,7 @@ input {
 input:focus {
     outline: none; 
     border: white solid 2.5px; 
-    background-color: transparent; 
+    background-color: transparent;
     color: white; 
 }
 
@@ -78,9 +78,9 @@ input::placeholder {
     transition: all 0.3s ease;
     transform: scale(1);
     letter-spacing: 1px;
-    will-change: transform; /* Optimize for transform animations */
-    backface-visibility: hidden; /* Prevent backface flickering */
-    -webkit-font-smoothing: antialiased; /* Improve font rendering */
+    will-change: transform; 
+    backface-visibility: hidden; 
+    -webkit-font-smoothing: antialiased; 
 }
 
 .colored_button:hover {
@@ -94,7 +94,7 @@ input::placeholder {
     transition: all 0.1s ease; 
 }
 
-.register{
+.login{
     font-weight: 500;
     font-size: 1.2em;
     background: none;
@@ -110,12 +110,12 @@ input::placeholder {
     -webkit-font-smoothing: antialiased;
 }
 
-.register:hover, .credits:hover {
+.login:hover, .credits:hover {
     transform: scale(1.03); 
 
 }
 
-.register:active, .credits:active {
+.login:active, .credits:active {
     transform: scale(0.98); 
     transition: all 0.1s ease; 
 }

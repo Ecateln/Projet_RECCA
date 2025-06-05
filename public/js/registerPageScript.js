@@ -1,4 +1,4 @@
-// Login Page - Script
+// Register Page - Script
 // Code by Sagnard Elouan and Sanchez Adam
 
 // Function to create the credits popup
@@ -80,7 +80,7 @@ function createCreditsPopup() {
 
     // Close function with proper scale-down animation
     function closePopup() {
-        // Change transition for closing (faster, no bounce)
+        // Change transition for closing 
         popup.style.transition = 'all 0.2s ease-out';
         overlay.style.transition = 'opacity 0.2s ease-out';
         
@@ -123,32 +123,16 @@ function createCreditsPopup() {
     }, 10);
 }
 
-// Function to go to the register page
-function goToRegisterPage(){
-    window.location.href = 'registerPage.html';
+// Function to navigate to the login page
+function goToLoginPage(){
+    window.location.href = 'loginPage.html';
 }
 
 // Variable globale pour stocker la notification actuelle
 let currentNotification = null;
 
-// Function to check URL parameters for registration status
-function checkUrlParameters() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const registerStatus = urlParams.get('registered');
-    
-    if (registerStatus === 'true') {
-        // Show the success notification after a short delay
-        setTimeout(() => {
-            showSuccessNotification();
-        }, 500);
-        
-        // Remove the 'registered' parameter from the URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-}
-
-// Function to show the success notification
-function showSuccessNotification() {
+// Function to create an error notification
+function createErrorNotification(message = "Erreur: Tu peux pas t'inscrire vu que t'es gay") {
     // Remove the current notification if it exists
     if (currentNotification && document.body.contains(currentNotification)) {
         document.body.removeChild(currentNotification);
@@ -157,13 +141,13 @@ function showSuccessNotification() {
 
     // Create notification container
     const notification = document.createElement('div');
-    notification.className = 'success-notification';
+    notification.className = 'error-notification';
     notification.style.cssText = `
         position: fixed;
         top: -100px;
         left: 20px;
         background-color: #2a2a2a;
-        border-left: 4px solid rgb(92, 255, 63);
+        border-left: 4px solid #FF4C4C;
         border-radius: 8px;
         padding: 15px 20px;
         max-width: 400px;
@@ -186,11 +170,11 @@ function showSuccessNotification() {
     const messageElement = document.createElement('span');
     messageElement.style.cssText = `
         font-size: 0.95em;
-        color: white;
+        color: #FF4C4C;
         margin-right: 15px;
         line-height: 1.3;
     `;
-    messageElement.textContent = "Inscription réussie ! Bienvenue dans notre communauté !";
+    messageElement.textContent = message;
 
     // Create close button
     const closeButton = document.createElement('button');
@@ -198,7 +182,7 @@ function showSuccessNotification() {
     closeButton.style.cssText = `
         background: none;
         border: none;
-        color: white;
+        color: #FF4C4C;
         font-size: 1.5em;
         cursor: pointer;
         width: 25px;
@@ -256,5 +240,17 @@ function showSuccessNotification() {
     }, 10);
 }
 
-// Event listener to check URL parameters when the page loads
-window.addEventListener('DOMContentLoaded', checkUrlParameters);
+// Function to verify registration
+function verifyRegister(){
+    // Get input values
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    // TODO CLEMENT: fait tes verifs cote serveur et utilise ça pour mettre une erreur
+    // createErrorNotification("Erreur: ...");"
+
+    // TODO CLEMENT: ajouter dans la base de données
+
+    window.location.href = 'loginPage.html?registered=true';
+}
