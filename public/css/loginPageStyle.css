@@ -1,0 +1,150 @@
+/* Login Page Recca - Style
+   Code by Sagnard Elouan and Sanchez Adam */
+
+body {
+    font-family: Montserrat;
+    margin: 0%;
+}
+
+/* Left Section */
+.login_section{
+    flex: 1;
+    background-color: #0f0f0f;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 21vh;
+    position: relative;
+    
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    font-family: Montserrat;
+    letter-spacing: 1px;
+}
+
+#welcome{
+    font-size: 2.8em;
+    font-weight: normal;
+    letter-spacing: 4px;
+}
+
+/* Textfield */
+input {
+    width: 65%;
+    height: 50px;
+    line-height: 50px;
+    border-radius: 50px;
+    border: white solid 2.5px;
+    background-color: transparent;
+    margin-bottom: 25px;
+    padding-left: 0.9em;
+    font-size: 1.3rem;
+    font-weight: 500;
+    font-family: Montserrat;
+    color: white
+}
+
+input:focus {
+    outline: none; 
+    border: white solid 2.5px; 
+    background-color: transparent; 
+    color: white; 
+}
+
+input::placeholder {
+    color: #676767;
+    letter-spacing: 1px;
+
+}
+   
+
+/* Buttons */
+.colored_button {
+    background: linear-gradient(to right, #F54673, #F5DA73);
+    width: 70%;
+    height: 53px;
+    border-radius: 50px;
+    border: none;
+    margin-bottom: 20px;
+    font-size: 1.7rem;
+    font-weight: 500;
+    font-family: Montserrat;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform: scale(1);
+    letter-spacing: 1px;
+    will-change: transform; /* Optimize for transform animations */
+    backface-visibility: hidden; /* Prevent backface flickering */
+    -webkit-font-smoothing: antialiased; /* Improve font rendering */
+}
+
+.colored_button:hover {
+    transform: scale(1.02); 
+    background: linear-gradient(to right, #F66A85, #F5E285);
+    box-shadow: 0 5px 15px rgba(245, 70, 115, 0.4); 
+}
+
+.colored_button:active {
+    transform: scale(0.98); 
+    transition: all 0.1s ease; 
+}
+
+.register{
+    font-weight: 500;
+    font-size: 1.2em;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    transform: scale(1);
+    transform-origin: center;
+    will-change: transform;
+    backface-visibility: hidden; 
+    -webkit-font-smoothing: antialiased;
+}
+
+.register:hover, .credits:hover {
+    transform: scale(1.03); 
+
+}
+
+.register:active, .credits:active {
+    transform: scale(0.98); 
+    transition: all 0.1s ease; 
+}
+
+.credits {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-weight: 500;
+    font-size: 0.9em;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    transform: scale(1);
+    transform-origin: center;
+    will-change: transform;
+    backface-visibility: hidden; 
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Right Section */
+.image_section {
+    flex: 1.4;
+    background-image: url("/public/img/FondAvecLogo.png");
+    background-size: cover;
+    background-position: left;
+    background-repeat: no-repeat;
+
+}
