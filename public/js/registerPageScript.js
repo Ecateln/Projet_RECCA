@@ -1,5 +1,5 @@
 // Register Page - Script
-// Code by Sagnard Elouan and Sanchez Adam
+// Code by Sagnard Elouan, Sanchez Adam and OGÉ Clément
 
 // Function to create the credits popup
 function createCreditsPopup() {
@@ -83,12 +83,12 @@ function createCreditsPopup() {
         // Change transition for closing 
         popup.style.transition = 'all 0.2s ease-out';
         overlay.style.transition = 'opacity 0.2s ease-out';
-        
+
         // Apply closing animations
         popup.style.transform = 'scale(0.8)';
         popup.style.opacity = '0';
         overlay.style.opacity = '0';
-        
+
         // Remove from DOM after animation completes
         setTimeout(() => {
             if (document.body.contains(overlay)) {
@@ -124,7 +124,7 @@ function createCreditsPopup() {
 }
 
 // Function to navigate to the login page
-function goToLoginPage(){
+function goToLoginPage() {
     window.location.href = 'loginPage.html';
 }
 
@@ -203,7 +203,7 @@ function createErrorNotification(message = "Une erreur est survenue") {
         if (notification && document.body.contains(notification)) {
             notification.style.top = '-100px';
             notification.style.opacity = '0';
-            
+
             setTimeout(() => {
                 if (document.body.contains(notification)) {
                     document.body.removeChild(notification);
@@ -241,16 +241,32 @@ function createErrorNotification(message = "Une erreur est survenue") {
 }
 
 // Function to verify registration
-function verifyRegister(){
+function verifyRegister() {
     // Get input values
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // TODO CLEMENT: fait tes verifs cote serveur et utilise ça pour mettre une erreur
-    // createErrorNotification("Erreur: ...");"
+    if (confirmPassword !== password) {
+        createErrorNotification("Les mots de passe ne correspondent pas.");
+        return;
+    }
 
-    // TODO CLEMENT: ajouter dans la base de données
+    fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            username: username,
+            password: password,
+        })
+    }).then(res => {
+        if (res.status == 201) {
+            window.location.href = 'loginPage.html?registered=true';
+            return;
+        }
 
-    window.location.href = 'loginPage.html?registered=true';
+        res.json()
+            .then(data => createErrorNotification(data.error))
+            .catch(() => createErrorNotification("Une erreur est survenue lors de l'inscription."));
+    });
 }

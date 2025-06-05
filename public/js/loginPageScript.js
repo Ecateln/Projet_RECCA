@@ -1,5 +1,5 @@
 // Login Page - Script
-// Code by Sagnard Elouan and Sanchez Adam
+// Code by Sagnard Elouan, Sanchez Adam and OGÉ Clément
 
 // Function to create the credits popup
 function createCreditsPopup() {
@@ -83,12 +83,12 @@ function createCreditsPopup() {
         // Change transition for closing (faster, no bounce)
         popup.style.transition = 'all 0.2s ease-out';
         overlay.style.transition = 'opacity 0.2s ease-out';
-        
+
         // Apply closing animations
         popup.style.transform = 'scale(0.8)';
         popup.style.opacity = '0';
         overlay.style.opacity = '0';
-        
+
         // Remove from DOM after animation completes
         setTimeout(() => {
             if (document.body.contains(overlay)) {
@@ -124,7 +124,7 @@ function createCreditsPopup() {
 }
 
 // Function to go to the register page
-function goToRegisterPage(){
+function goToRegisterPage() {
     window.location.href = 'registerPage.html';
 }
 
@@ -135,13 +135,13 @@ let currentNotification = null;
 function checkUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const registerStatus = urlParams.get('registered');
-    
+
     if (registerStatus === 'true') {
         // Show the success notification after a short delay
         setTimeout(() => {
             showSuccessNotification();
         }, 500);
-        
+
         // Remove the 'registered' parameter from the URL
         window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -219,7 +219,7 @@ function showSuccessNotification() {
         if (notification && document.body.contains(notification)) {
             notification.style.top = '-100px';
             notification.style.opacity = '0';
-            
+
             setTimeout(() => {
                 if (document.body.contains(notification)) {
                     document.body.removeChild(notification);
@@ -255,6 +255,149 @@ function showSuccessNotification() {
         }
     }, 10);
 }
+
+// Function to create an error notification
+function createErrorNotification(message = "Une erreur est survenue") {
+    // Remove the current notification if it exists
+    if (currentNotification && document.body.contains(currentNotification)) {
+        document.body.removeChild(currentNotification);
+        currentNotification = null;
+    }
+
+    // Create notification container
+    const notification = document.createElement('div');
+    notification.className = 'error-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: -100px;
+        left: 20px;
+        background-color: #2a2a2a;
+        border-left: 4px solid #FF4C4C;
+        border-radius: 8px;
+        padding: 15px 20px;
+        max-width: 400px;
+        width: auto;
+        color: white;
+        font-family: Montserrat, sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    `;
+
+    // Set current notification reference
+    currentNotification = notification;
+
+    // Create message content
+    const messageElement = document.createElement('span');
+    messageElement.style.cssText = `
+        font-size: 0.95em;
+        color: #FF4C4C;
+        margin-right: 15px;
+        line-height: 1.3;
+    `;
+    messageElement.textContent = message;
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.cssText = `
+        background: none;
+        border: none;
+        color: #FF4C4C;
+        font-size: 1.5em;
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    `;
+
+    // Assemble notification
+    notification.appendChild(messageElement);
+    notification.appendChild(closeButton);
+
+    // Close function with slide-up animation
+    function closeNotification() {
+        if (notification && document.body.contains(notification)) {
+            notification.style.top = '-100px';
+            notification.style.opacity = '0';
+
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+                // Reset current notification reference
+                if (currentNotification === notification) {
+                    currentNotification = null;
+                }
+            }, 400);
+        }
+    }
+
+    // Add event listeners
+    closeButton.addEventListener('click', closeNotification);
+    closeButton.addEventListener('mouseenter', () => {
+        closeButton.style.transform = 'scale(1.1)';
+    });
+    closeButton.addEventListener('mouseleave', () => {
+        closeButton.style.transform = 'scale(1)';
+    });
+
+    // Auto-close after 5 seconds
+    const autoCloseTimeout = setTimeout(closeNotification, 5000);
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Trigger slide-down animation
+    setTimeout(() => {
+        if (notification && document.body.contains(notification)) {
+            notification.style.top = '20px';
+            notification.style.opacity = '1';
+        }
+    }, 10);
+}
+
+function login() {
+    // Get the username and password from the input fields
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Validate inputs
+    if (!username || !password) {
+        alert('Veuillez remplir tous les champs.');
+        return;
+    }
+
+    fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            username: username,
+            password: password,
+        })
+    })
+        .then(res => res.json(console.log(res.status)))
+        .then(res => {
+            if (res.token !== undefined) {
+                document.cookie = `token=${res.token}; expires=${new Date(res.expiresAt).toUTCString()}; path=/; secure; SameSite=Strict`;
+
+                // TODO: redirect to the main page
+                return;
+            }
+
+            createErrorNotification(res.error);
+        })
+        .catch((e) => createErrorNotification("Une erreur est survenue lors de la connexion." + e));
+}
+
 
 // Event listener to check URL parameters when the page loads
 window.addEventListener('DOMContentLoaded', checkUrlParameters);

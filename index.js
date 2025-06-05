@@ -26,7 +26,7 @@ const server = createServer(app);
 const socket_server = new Server(server);
 
 app.use(express.json());
-app.use('/static', express.static(path.join('public')));
+app.use('/public', express.static(path.join('public')));
 
 socket_server.on('connection', (socket) => {
     socket.user_data = null;
@@ -110,26 +110,26 @@ app.get('/', (req, res) => res.status(200).send("Hello World :)").end());
 
 app.post('/register', async (req, res) => {
     const body = req.body;
+    console.log(req.body);
     if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
         return res.status(400)
             .send('Invalid request body')
             .end();
 
-    console.log(req.body);
 
     if (body.username.length < 2 || body.username.length > 20)
         return res.status(400)
-            .send('La longueur du nom d\'utilisateur doit être comprise entre 2 et 20 caractères.')
+            .json({ error: 'La longueur du nom d\'utilisateur doit être comprise entre 2 et 20 caractères.' })
             .end();
 
     if (body.password.length < 12 || body.password.length > 64)
         return res.status(400)
-            .send('La longueur du mot de passe doit être comprise entre 12 et 64 caractères.')
+            .json({ error: 'La longueur du mot de passe doit être comprise entre 12 et 64 caractères.' })
             .end();
 
     if (!/[a-zA-Z0-9_-]/.test(body.username))
         return res.status(400)
-            .send('Le nom d\'utilisateur ne doit contenir que des lettres, des chiffres et des tirets.')
+            .json({ error: 'Le nom d\'utilisateur ne doit contenir que des lettres, des chiffres et des tirets.' })
             .end();
 
     if (
@@ -139,14 +139,14 @@ app.post('/register', async (req, res) => {
         !/[!@#$%^&*(),.?"':{}|<>+-]/.test(body.password)
     )
         return res.status(400)
-            .send('Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.')
+            .json({ error: 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.' })
             .end();
 
     // Check if username already exists
     const is_free = await isUsernameFree(body.username);
     if (!is_free)
         return res.status(400)
-            .send('Un utilisateur avec ce nom d\'utilisateur existe déjà.')
+            .json({ error: 'Un utilisateur avec ce nom d\'utilisateur existe déjà.' })
             .end();
 
     // Hash password
@@ -155,7 +155,7 @@ app.post('/register', async (req, res) => {
 
     if (!user)
         return res.status(500)
-            .send('Erreur lors de l\'inscription, veuillez réessayer plus tard.')
+            .json({ error: 'Erreur lors de l\'inscription, veuillez réessayer plus tard.' })
             .end();
 
     res.status(201)
@@ -179,7 +179,7 @@ app.post('/login', async (req, res) => {
 
     if (!user_data || !pass_ok)
         return res.status(400)
-            .send('Nom d\'utilisateur ou mot de passe incorrect.')
+            .json({ error: 'Nom d\'utilisateur ou mot de passe incorrect.' })
             .end();
 
     console.log('User logged in:', user_data);
@@ -192,7 +192,7 @@ app.post('/login', async (req, res) => {
     console.log('Token created:', token_data);
     if (!token_data)
         return res.status(500)
-            .send('Erreur lors de la connexion, veuillez réessayer plus tard.')
+            .json({ error: 'Erreur lors de la création du token, veuillez réessayer plus tard.' })
             .end();
 
     res.status(200)
