@@ -6,38 +6,10 @@ function createCreditsPopup() {
     // Create overlay
     const overlay = document.createElement('div');
     overlay.className = 'popup-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    `;
 
     // Create popup container
     const popup = document.createElement('div');
     popup.className = 'popup-container';
-    popup.style.cssText = `
-        background-color: #2a2a2a;
-        border-radius: 10px;
-        padding: 30px;
-        max-width: 500px;
-        width: 90%;
-        color: white;
-        font-family: Montserrat, sans-serif;
-        position: relative;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        transform: scale(0.7);
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        opacity: 0;
-    `;
 
     // Create close button
     const closeButton = document.createElement('button');
