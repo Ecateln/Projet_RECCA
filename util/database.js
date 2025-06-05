@@ -7,7 +7,7 @@ async function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(32) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
+                password_hash VARCHAR(1024) NOT NULL,
                 personalization_info VARCHAR(1024) DEFAULT '' NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -42,7 +42,7 @@ async function initializeDatabase() {
         `);
     } catch (error) {
         console.error('Error during database initialization:', error.message);
-        return;
+        process.exit(1);
     }
 
     console.log('Database initialization complete!');
@@ -56,7 +56,6 @@ async function createUser(username, passwordHash) {
             VALUES ($1, $2)
             RETURNING id, username, created_at
         `, [username, passwordHash]);
-        console.log('User created:', user);
         return user;
     } catch (error) {
         console.error('Error creating user:', error.message);
@@ -71,7 +70,6 @@ async function createToken(value, userId, expiresAt) {
             VALUES ($1, $2, $3)
             RETURNING value, user_id, expires_at
         `, [value, userId, expiresAt]);
-        console.log('Token created:', token);
         return token;
     } catch (error) {
         console.error('Error creating token:', error.message);
@@ -101,6 +99,20 @@ async function getUserByUsername(username) {
             WHERE username = $1
         `, [username]);
         return user;
+    } catch (error) {
+        console.error('Error getting user by username:', error.message);
+    }
+}
+
+// CHECK IF USERNAME EXISTS
+async function isUsernameFree(username) {
+    try {
+        const user = await db.oneOrNone(`
+            SELECT id
+            FROM users
+            WHERE username = $1
+        `, [username]);
+        return !user;
     } catch (error) {
         console.error('Error getting user by username:', error.message);
     }
@@ -210,6 +222,7 @@ export {
     getUserById,
     getUserByUsername,
     getUserConversations,
+    isUsernameFree,
     addMessage,
     getConversationMessages,
     getFullConversation,

@@ -3,9 +3,9 @@ import path from 'path';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { askAgent, generateToken } from './util/functions.js';
+import { askAgent, generateToken, hashPassword, verifyPassword } from './util/functions.js';
 import { pgp } from './util/globals.js';
-import { initializeDatabase } from './util/database.js';
+import { createToken, createUser, getUserByUsername, initializeDatabase, isUsernameFree } from './util/database.js';
 
 await initializeDatabase();
 
@@ -100,26 +100,14 @@ socket_server.on('connection', (socket) => {
 
 app.get('/', (req, res) => res.status(200).send("Hello World :)").end());
 
-// TODO: register/login with tokens with expiration
-app.post('/login', (req, res) => {
+app.post('/register', async (req, res) => {
     const body = req.body;
     if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
         return res.status(400)
-                .send('Invalid request body')
-                .end();
+            .send('Invalid request body')
+            .end();
 
-    // TODO: validate login data, generate token, and save it in the database
-    // const token = generateToken();
-
-    res.status(404).end();
-});
-
-app.post('/register', (req, res) => {
-    const body = req.body;
-    if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
-        return res.status(400)
-                .send('Invalid request body')
-                .end();
+    console.log(req.body);
 
     if (body.username.length < 2 || body.username.length > 20)
         return res.status(400)
@@ -131,11 +119,83 @@ app.post('/register', (req, res) => {
             .send('La longueur du mot de passe doit être comprise entre 12 et 64 caractères.')
             .end();
 
-    // TODO: store and hash password, create user in database
+    if (!/[a-zA-Z0-9_-]/.test(body.username))
+        return res.status(400)
+            .send('Le nom d\'utilisateur ne doit contenir que des lettres, des chiffres et des tirets.')
+            .end();
 
-    console.log(req.body);
-    res.status(404).end();
+    if (
+        !/[a-z]/.test(body.password) ||
+        !/[A-Z]/.test(body.password) ||
+        !/[0-9]/.test(body.password) ||
+        !/[!@#$%^&*(),.?"':{}|<>+-]/.test(body.password)
+    )
+        return res.status(400)
+            .send('Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.')
+            .end();
+
+    // Check if username already exists
+    const is_free = await isUsernameFree(body.username);
+    if (!is_free)
+        return res.status(400)
+            .send('Un utilisateur avec ce nom d\'utilisateur existe déjà.')
+            .end();
+
+    // Hash password
+    const hash = hashPassword(body.password);
+    const user = await createUser(body.username, hash);
+
+    if (!user)
+        return res.status(500)
+            .send('Erreur lors de l\'inscription, veuillez réessayer plus tard.')
+            .end();
+
+    res.status(201)
+        // .json({
+        //     id: user.id,
+        //     username: user.username,
+        //     created_at: user.created_at,
+        // })
+        .end();
 });
+
+app.post('/login', async (req, res) => {
+    const body = req.body;
+    if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
+        return res.status(400)
+            .send('Invalid request body')
+            .end();
+
+    const user_data = await getUserByUsername(body.username);
+    const pass_ok = verifyPassword(body.password, user_data?.password_hash ?? '');
+
+    if (!user_data || !pass_ok)
+        return res.status(400)
+            .send('Nom d\'utilisateur ou mot de passe incorrect.')
+            .end();
+
+    console.log('User logged in:', user_data);
+
+    // Generate token
+    const token = generateToken();
+    const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
+    const token_data = await createToken(token, user_data.id, expires_at);
+
+    console.log('Token created:', token_data);
+    if (!token_data)
+        return res.status(500)
+            .send('Erreur lors de la connexion, veuillez réessayer plus tard.')
+            .end();
+
+    res.status(200)
+        .json({
+            token: token_data.value,
+            expires_at: token_data.expires_at,
+        })
+        .end();
+});
+
+// TODO: update account
 
 app.get('/test', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html')));
 app.all(/(.*)/, (req, res) => res.redirect("https://youtu.be/dQw4w9WgXcQ"));

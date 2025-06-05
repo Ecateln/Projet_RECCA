@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 
 async function* askAgent(prompt, previous_messages, think = false, web = false) {
@@ -13,25 +13,11 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
         think,
     });
 
-    // let startedThinking = false;
-    // let finishedThinking = false;
-
     let full_response = '';
     for await (const chunk of response) {
-        // if (chunk.message.thinking && !startedThinking) {
-        //     startedThinking = true;
-        //     process.stdout.write('Thinking:\n========\n\n');
-        // } else if (chunk.message.content && startedThinking && !finishedThinking) {
-        //     finishedThinking = true;
-        //     process.stdout.write('\n\nResponse:\n========\n\n');
-        // }
-
-        if (chunk.message.thinking) {
-            // process.stdout.write(chunk.message.thinking);
-        } else if (chunk.message.content) {
+        if (chunk.message.content) {
             yield chunk.message.content;
             full_response += chunk.message.content;
-            // process.stdout.write(chunk.message.content);
         }
     }
 
@@ -42,4 +28,18 @@ function generateToken() {
     return randomBytes(64).toString('base64url');
 }
 
-export { askAgent, generateToken }
+function hashPassword(password) {
+    const salt = randomBytes(128).toString('base64');
+    const hash = pbkdf2Sync(password, salt, 10000, 512, 'sha512');
+
+    return salt + '$' + hash.toString('base64');
+}
+
+function verifyPassword(password, hash) {
+    const [salt, storedHash] = hash.split('$');
+    const hashToVerify = pbkdf2Sync(password, salt, 10000, 512, 'sha512').toString('base64');
+
+    return hashToVerify === storedHash;
+}
+
+export { askAgent, generateToken, hashPassword, verifyPassword }
