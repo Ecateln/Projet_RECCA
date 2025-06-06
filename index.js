@@ -5,7 +5,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { askAgent, checkAuthentication, cookieParser, generateToken, hashPassword, verifyPassword } from './util/functions.js';
 import { pgp } from './util/globals.js';
-import { createToken, createUser, getUserByToken, getUserByUsername, initializeDatabase, isTokenValid, isUsernameFree } from './util/database.js';
+import { createToken, createUser, getUserByToken, getUserByUsername, getUserConversations, initializeDatabase, isTokenValid, isUsernameFree } from './util/database.js';
 
 await initializeDatabase();
 
@@ -37,27 +37,24 @@ socket_server.on('connection', (socket) => {
 
         const user_data = await getUserByToken(token);
         if (!user_data) {
-            socket.emit('login_failed', 'Token invalide ou expiré.');
+            socket.emit('login_failed', { error: 'Token invalide ou expiré.', redirect: '/login' });
             return socket.disconnect();
         }
 
-        // TODO: load conversations
-
-        return console.log(user_data);
+        const conversations = await getUserConversations(user_data.id);
+        if (!conversations) {
+            socket.emit('login_failed', { error: 'Erreur lors du chargement des conversations.' });
+            return;
+        }
 
         socket.user_data = {
+            id: user_data.id,
+            conversations,
             active_query: false,
-            conversations: [{
-                id: "0", // Date.now().toString(),
-                title: 'Conversation with Barbara',
-                messages: [
-                    { date: Date.now() - 123456, role: 'user', content: 'Hello, I am Barbara.' },
-                    { date: Date.now() - 100456, role: 'assistant', content: 'Hello Barbara, how can I help you today?' },
-                ],
-            }],
             current_conversation: null,
         };
 
+        // return console.log(user_data, convs);
         socket.emit(
             'login_success',
             socket.user_data.conversations.map(({ id, title }) => ({ id, title })),

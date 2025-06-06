@@ -164,7 +164,7 @@ async function isUsernameFree(username) {
 async function createConversation(userId, title) {
     try {
         const conversation = await db.one(`
-            INSERT INTO conversations (user_id, title)
+            INSERT INTO conversations (author_id, title)
             VALUES ($1, $2)
             RETURNING id, title, created_at
         `, [userId, title]);
@@ -180,10 +180,10 @@ async function createConversation(userId, title) {
 async function getUserConversations(userId) {
     try {
         const conversations = await db.any(`
-            SELECT id, title, created_at, updated_at
+            SELECT id, title, created_at, last_message_at
             FROM conversations
-            WHERE user_id = $1
-            ORDER BY updated_at DESC
+            WHERE author_id = $1
+            ORDER BY last_message_at DESC
         `, [userId]);
         return conversations;
     } catch (error) {
@@ -201,9 +201,9 @@ async function addMessage(conversationId, role, content) {
             RETURNING id, role, content, created_at
         `, [conversationId, role, content]);
 
-        // Update conversation's updated_at timestamp
+        // Update conversation's last_message_at timestamp
         await db.none(
-            'UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+            'UPDATE conversations SET last_message_at = CURRENT_TIMESTAMP WHERE id = $1',
             [conversationId]
         );
 
@@ -234,7 +234,7 @@ async function getConversationMessages(conversationId) {
 async function getFullConversation(conversationId) {
     try {
         const conversation = await db.oneOrNone(`
-            SELECT c.id, c.title, c.created_at, c.updated_at, COALESCE(
+            SELECT c.id, c.title, c.created_at, c.last_message_at, COALESCE(
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
                         'id', m.id,
@@ -248,7 +248,7 @@ async function getFullConversation(conversationId) {
             FROM conversations c
             LEFT JOIN messages m ON c.id = m.conversation_id
             WHERE c.id = $1
-            GROUP BY c.id, c.title, c.created_at, c.updated_at
+            GROUP BY c.id, c.title, c.created_at, c.last_message_at
         `, [conversationId]);
         return conversation;
     } catch (error) {

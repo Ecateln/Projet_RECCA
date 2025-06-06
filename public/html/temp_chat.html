@@ -247,8 +247,8 @@
                 log('Connected to server', 'received');
                 updateStatus('connected', 'Connected');
 
-                // const token = document.cookie.match(/token=([^;]+)/).pop();
-                // socket.emit('login', token);
+                const token = document.cookie.match(/token=([^;]+)/).pop();
+                socket.emit('login', token);
             });
 
             socket.on('disconnect', () => {
@@ -263,6 +263,12 @@
                 updateStatus('authenticated', 'Authenticated');
                 isAuthenticated = true;
                 displayConversations(conversations);
+                updateUI();
+            });
+
+            socket.on('login_failed', (data) => {
+                if (data.redirect) window.location.href = data.redirect;
+                log('Login failed', 'received');
                 updateUI();
             });
 
@@ -333,6 +339,14 @@
                 item.onclick = () => selectConversation(conv.id, item);
                 listEl.appendChild(item);
             });
+
+            if (conversations.length === 0) {
+                const noConversations = document.createElement('div');
+                noConversations.style.color = '#666';
+                noConversations.style.fontStyle = 'italic';
+                noConversations.textContent = 'No conversations available';
+                listEl.appendChild(noConversations);
+            }
         }
 
         function selectConversation(id, element) {
