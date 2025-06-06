@@ -1,5 +1,6 @@
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
+import { isTokenValid } from './database.js';
 
 async function* askAgent(prompt, previous_messages, think = false, web = false) {
     // TODO: web requests
@@ -22,6 +23,18 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
     }
 
     previous_messages.push(question, { date: Date.now(), role: 'assistant', content: full_response });
+}
+
+// Authentication check middleware
+async function checkAuthentication(req, res, next) {
+    const token = req.cookies.token;
+    if (token) {
+        const token_valid = await isTokenValid(token);
+        if (!token_valid) return res.clearCookie('token').redirect('/login');
+        else if (req.path !== '/') return res.redirect('/');
+    }
+
+    next();
 }
 
 // Cookie parser middleware
@@ -53,4 +66,4 @@ function verifyPassword(password, hash) {
     return hashToVerify === storedHash;
 }
 
-export { askAgent, cookieParser, generateToken, hashPassword, verifyPassword }
+export { askAgent, checkAuthentication, cookieParser, generateToken, hashPassword, verifyPassword }
