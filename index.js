@@ -107,8 +107,9 @@ socket_server.on('connection', (socket) => {
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "temp_chat.html")));
-app.get(/^\/$|^\/login$/i, (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
+app.get('/login', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
 app.get('/register', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
+app.get('/logout', (req, res) => res.clearCookie('token').redirect('/login'));
 // TODO: favicon link
 
 app.post('/register', async (req, res) => {

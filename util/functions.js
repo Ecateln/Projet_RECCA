@@ -27,12 +27,15 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
 
 // Authentication check middleware
 async function checkAuthentication(req, res, next) {
+    if (req.path.match(/^\/public\/.+$/i)) return next();
+
     const token = req.cookies.token;
     if (token) {
         const token_valid = await isTokenValid(token);
         if (!token_valid) return res.clearCookie('token').redirect('/login');
-        else if (req.path !== '/') return res.redirect('/');
+        else if (req.path !== '/' && req.path !== '/logout') return res.redirect('/');
     }
+    else if (req.path === '/') return res.redirect('/login');
 
     next();
 }
