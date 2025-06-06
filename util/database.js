@@ -193,13 +193,13 @@ async function getUserConversations(userId) {
 }
 
 // ADD MESSAGE TO CONVERSATION
-async function addMessage(conversationId, role, content) {
+async function addMessage(conversationId, role, content, createdAt) {
     try {
         const message = await db.one(`
-            INSERT INTO messages (conversation_id, role, content)
-            VALUES ($1, $2, $3)
+            INSERT INTO messages (conversation_id, role, content, created_at)
+            VALUES ($1, $2, $3, $4)
             RETURNING id, role, content, created_at
-        `, [conversationId, role, content]);
+        `, [conversationId, role, content, createdAt]);
 
         // Update conversation's last_message_at timestamp
         await db.none(

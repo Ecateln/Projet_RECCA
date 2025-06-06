@@ -1,6 +1,6 @@
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
-import { isTokenValid } from './database.js';
+import { getConversationMessages, isTokenValid } from './database.js';
 
 async function* askAgent(prompt, previous_messages, think = false, web = false) {
     // TODO: web requests
@@ -62,6 +62,20 @@ function hashPassword(password) {
     return salt + '$' + hash.toString('base64');
 }
 
+async function loadConversationMessages(conversation) {
+    const messages = await getConversationMessages(conversation.id);
+    if (!messages) return false;
+
+    conversation.messages = messages.map(m => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+        created_at: m.created_at,
+    }));
+
+    return true;
+}
+
 function verifyPassword(password, hash) {
     const [salt, storedHash] = hash.split('$');
     const hashToVerify = pbkdf2Sync(password, salt, 10000, 512, 'sha512').toString('base64');
@@ -69,4 +83,4 @@ function verifyPassword(password, hash) {
     return hashToVerify === storedHash;
 }
 
-export { askAgent, checkAuthentication, cookieParser, generateToken, hashPassword, verifyPassword }
+export { askAgent, checkAuthentication, cookieParser, generateToken, hashPassword, loadConversationMessages, verifyPassword }

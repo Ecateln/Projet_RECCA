@@ -199,16 +199,11 @@
             </div>
 
             <div class="section">
-                <h3>Authentication</h3>
-                <input type="text" id="token-input" placeholder="Token (any string)" value="test-token">
-                <button id="login-btn" onclick="login()">Login</button>
-            </div>
-
-            <div class="section">
                 <h3>Conversations</h3>
                 <div id="conversation-list" class="conversation-list">
                     <div style="color: #666; font-style: italic;">Login first to see conversations</div>
                 </div>
+                <button id="login-btn" onclick="newConversation()">Nouvelle conversation</button>
             </div>
 
             <div class="section">
@@ -266,12 +261,6 @@
                 updateUI();
             });
 
-            socket.on('login_failed', (data) => {
-                if (data.redirect) window.location.href = data.redirect;
-                log('Login failed', 'received');
-                updateUI();
-            });
-
             socket.on('conversation', (conversation) => {
                 log('Received conversation: ' + conversation.title, 'received');
                 currentConversation = conversation;
@@ -295,9 +284,17 @@
                 }
             });
 
-            socket.on('error', (message) => {
-                log('Error: ' + message, 'error');
-                addMessage('error', 'Error: ' + message);
+            socket.on('conversation_created', (conversation) => {
+                log('New conversation created: ' + conversation.title, 'received');
+                displayConversations([conversation]);
+                selectConversation(conversation.id, document.querySelector('.conversation-item:last-child'));
+            });
+
+            socket.on('error', (data) => {
+                if (data.redirect) window.location.href = data.redirect;
+
+                log('Error: ' + data.error, 'error');
+                addMessage('error', 'Error: ' + data.error);
             });
         }
 
@@ -308,13 +305,11 @@
         }
 
         function updateUI() {
-            const loginBtn = document.getElementById('login-btn');
-            const tokenInput = document.getElementById('token-input');
+            // const loginBtn = document.getElementById('login-btn');
             const messageInput = document.getElementById('message-input');
             const sendBtn = document.getElementById('send-btn');
 
-            loginBtn.disabled = isAuthenticated;
-            tokenInput.disabled = isAuthenticated;
+            // loginBtn.disabled = isAuthenticated;
             messageInput.disabled = !currentConversation;
             sendBtn.disabled = !currentConversation;
         }
@@ -398,6 +393,11 @@
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
 
+        function newConversation(title = "Boubouboubou") {
+            log('Created new conversation: ' + title, 'sent');
+            socket.emit('create_conversation', title);
+        }
+
         function sendMessage() {
             const input = document.getElementById('message-input');
             const message = input.value.trim();
@@ -405,7 +405,7 @@
             if (!message) return;
 
             log('Sending query: ' + message, 'sent');
-            socket.emit('query', message);
+            socket.emit('query', currentConversation.id, message);
 
             addMessage('user', message);
             input.value = '';
@@ -419,13 +419,6 @@
         document.getElementById('message-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 sendMessage();
-            }
-        });
-
-        // Handle Enter key in token input
-        document.getElementById('token-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                login();
             }
         });
 
