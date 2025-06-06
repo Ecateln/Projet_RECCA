@@ -389,6 +389,7 @@ hr {
     justify-content: center;
     width: 40px;
     height: 40px;
+    
 }
 
 .retract-button:hover {
@@ -433,6 +434,14 @@ hr {
 }
 
 .sidebar.retracted + .chat-area {
+    margin-left: 0;
+}
+
+.input-area {
+    transition: left 0.3s ease;
+}
+
+.sidebar.retracted + .input-area {
     margin-left: 0;
 }
 

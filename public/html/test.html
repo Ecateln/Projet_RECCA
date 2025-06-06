@@ -61,7 +61,7 @@
             
             <div class="input-area">
                 <input type="text" id="message-input" placeholder="Type your message..." >
-                <button id="send-btn" onclick="addMessage()" >Send</button>
+                <button id="send-btn" onclick="sendMessage()" >Send</button>
             </div>
         </div>
     </div>
@@ -77,12 +77,16 @@
         // Fonction pour basculer l'état de la sidebar
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const inputArea = document.querySelector('.input-area');
+            
             sidebarRetracted = !sidebarRetracted;
             
             if (sidebarRetracted) {
                 sidebar.classList.add('retracted');
+                inputArea.style.left = '60px';
             } else {
                 sidebar.classList.remove('retracted');
+                inputArea.style.left = '280px';
             }
             
             // Sauvegarder l'état dans le localStorage si disponible
@@ -99,7 +103,10 @@
                 const saved = localStorage.getItem('sidebarRetracted');
                 if (saved === 'true') {
                     sidebarRetracted = true;
-                    document.getElementById('sidebar').classList.add('retracted');
+                    const sidebar = document.getElementById('sidebar');
+                    const inputArea = document.querySelector('.input-area');
+                    sidebar.classList.add('retracted');
+                    inputArea.style.left = '60px';
                 }
             } catch (e) {
                 // Ignore si localStorage n'est pas disponible
