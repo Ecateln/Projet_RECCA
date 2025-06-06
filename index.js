@@ -106,7 +106,11 @@ socket_server.on('connection', (socket) => {
     });
 });
 
-app.get('/', (req, res) => res.status(200).send("Hello World :)").end());
+app.get(/\/|\/login/, (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
+app.get('/register', (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
+app.get('/test', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html')));
+// app.get('/chat', (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "test.html")));
+// TODO: favicon link
 
 app.post('/register', async (req, res) => {
     const body = req.body;
@@ -205,7 +209,6 @@ app.post('/login', async (req, res) => {
 
 // TODO: update account
 
-app.get('/test', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html')));
 app.all(/(.*)/, (req, res) => res.redirect("https://youtu.be/dQw4w9WgXcQ"));
 
 // Start server

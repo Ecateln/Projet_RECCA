@@ -125,7 +125,7 @@ function createCreditsPopup() {
 
 // Function to navigate to the login page
 function goToLoginPage() {
-    window.location.href = 'loginPage.html';
+    window.location.href = '/login';
 }
 
 // Variable globale pour stocker la notification actuelle
@@ -261,7 +261,7 @@ function verifyRegister() {
         })
     }).then(res => {
         if (res.status == 201) {
-            window.location.href = 'loginPage.html?registered=true';
+            window.location.href = '/login?registered=true';
             return;
         }
 

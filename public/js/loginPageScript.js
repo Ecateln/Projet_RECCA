@@ -125,7 +125,7 @@ function createCreditsPopup() {
 
 // Function to go to the register page
 function goToRegisterPage() {
-    window.location.href = 'registerPage.html';
+    window.location.href = '/register';
 }
 
 // Variable globale pour stocker la notification actuelle
