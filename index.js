@@ -106,7 +106,7 @@ socket_server.on('connection', (socket) => {
     });
 });
 
-app.get(/\/|\/login/, (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
+app.get(/^\/$|^\/login$/, (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
 app.get('/register', (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
 app.get('/test', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html')));
 // app.get('/chat', (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "test.html")));
