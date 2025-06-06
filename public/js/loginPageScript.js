@@ -372,7 +372,7 @@ function login() {
 
     // Validate inputs
     if (!username || !password) {
-        alert('Veuillez remplir tous les champs.');
+        createErrorNotification('Veuillez remplir tous les champs.');
         return;
     }
 

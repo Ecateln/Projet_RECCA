@@ -247,6 +247,11 @@ function verifyRegister() {
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
+    if (!username || !password) {
+        createErrorNotification('Veuillez remplir tous les champs.');
+        return;
+    }
+
     if (confirmPassword !== password) {
         createErrorNotification("Les mots de passe ne correspondent pas.");
         return;
