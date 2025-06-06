@@ -256,6 +256,20 @@ async function getFullConversation(conversationId) {
     }
 }
 
+async function isTokenValid(token) {
+    try {
+        const result = await db.oneOrNone(`
+            SELECT user_id
+            FROM tokens
+            WHERE value = $1 AND expires_at > CURRENT_TIMESTAMP
+        `, [token]);
+        return result != null;
+    } catch (error) {
+        console.error('Error validating token:', error.message);
+        return null;
+    }
+}
+
 export {
     initializeDatabase,
     createUser,
@@ -269,4 +283,5 @@ export {
     getConversationMessages,
     getFullConversation,
     getUserByToken,
+    isTokenValid,
 };

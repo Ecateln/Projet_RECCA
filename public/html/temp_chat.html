@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Conversation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: 80vh;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .chat-area {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .status.disconnected {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .status.connected {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status.authenticated {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        
+        .conversation-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .conversation-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+            cursor: pointer;
+            background-color: #f9f9f9;
+        }
+        
+        .conversation-item:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .conversation-item.selected {
+            background-color: #e3f2fd;
+            border-color: #1976d2;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background-color: #fafafa;
+            max-height: 400px;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            background-color: #e3f2fd;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.assistant {
+            background-color: #f1f8e9;
+        }
+        
+        .message.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-area input {
+            flex: 1;
+        }
+        
+        .logs {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+        }
+        
+        .log-entry.sent {
+            color: #1976d2;
+        }
+        
+        .log-entry.received {
+            color: #388e3c;
+        }
+        
+        .log-entry.error {
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Socket.IO Conversation Test Interface</h1>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="section">
+                <div id="status" class="status disconnected">Disconnected</div>
+            </div>
+            
+            <div class="section">
+                <h3>Authentication</h3>
+                <input type="text" id="token-input" placeholder="Token (any string)" value="test-token">
+                <button id="login-btn" onclick="login()">Login</button>
+            </div>
+            
+            <div class="section">
+                <h3>Conversations</h3>
+                <div id="conversation-list" class="conversation-list">
+                    <div style="color: #666; font-style: italic;">Login first to see conversations</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3>Connection Logs</h3>
+                <div id="logs" class="logs"></div>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="section">
+                <h3>Current Conversation</h3>
+                <div id="messages" class="messages">
+                    <div style="color: #666; font-style: italic;">Select a conversation to start chatting</div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="message-input" placeholder="Type your message..." disabled>
+                <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/socket-io.js"></script>
+    <script>
+        let socket = null;
+        let currentConversation = null;
+        let isAuthenticated = false;
+        let currentResponse = '';
+        
+        // Initialize socket connection
+        function initSocket() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                log('Connected to server', 'received');
+                updateStatus('connected', 'Connected');
+            });
+            
+            socket.on('disconnect', () => {
+                log('Disconnected from server', 'error');
+                updateStatus('disconnected', 'Disconnected');
+                isAuthenticated = false;
+                updateUI();
+            });
+            
+            socket.on('login_success', (conversations) => {
+                log('Login successful', 'received');
+                updateStatus('authenticated', 'Authenticated');
+                isAuthenticated = true;
+                displayConversations(conversations);
+                updateUI();
+            });
+            
+            socket.on('conversation', (conversation) => {
+                log('Received conversation: ' + conversation.title, 'received');
+                currentConversation = conversation;
+                displayMessages(conversation.messages);
+                updateUI();
+            });
+            
+            socket.on('res', (token) => {
+                if (token === null) {
+                    // End of response
+                    log('Response complete', 'received');
+                    if (currentResponse.trim()) {
+                        addMessage('assistant', currentResponse);
+                        currentResponse = '';
+                    }
+                    updateUI();
+                } else {
+                    // Streaming token
+                    currentResponse += token;
+                    updateStreamingMessage();
+                }
+            });
+            
+            socket.on('error', (message) => {
+                log('Error: ' + message, 'error');
+                addMessage('error', 'Error: ' + message);
+            });
+        }
+        
+        function updateStatus(type, text) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status ' + type;
+            statusEl.textContent = text;
+        }
+        
+        function updateUI() {
+            const loginBtn = document.getElementById('login-btn');
+            const tokenInput = document.getElementById('token-input');
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            
+            loginBtn.disabled = isAuthenticated;
+            tokenInput.disabled = isAuthenticated;
+            messageInput.disabled = !currentConversation;
+            sendBtn.disabled = !currentConversation;
+        }
+        
+        function log(message, type = 'info') {
+            const logsEl = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logsEl.appendChild(entry);
+            logsEl.scrollTop = logsEl.scrollHeight;
+        }
+        
+        function login() {
+            const token = document.getElementById('token-input').value;
+            if (!token.trim()) {
+                alert('Please enter a token');
+                return;
+            }
+            
+            log('Sending login with token: ' + token, 'sent');
+            socket.emit('login', token);
+        }
+        
+        function displayConversations(conversations) {
+            const listEl = document.getElementById('conversation-list');
+            listEl.innerHTML = '';
+            
+            conversations.forEach(conv => {
+                const item = document.createElement('div');
+                item.className = 'conversation-item';
+                item.textContent = conv.title;
+                item.onclick = () => selectConversation(conv.id, item);
+                listEl.appendChild(item);
+            });
+        }
+        
+        function selectConversation(id, element) {
+            // Remove previous selection
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Select new conversation
+            element.classList.add('selected');
+            
+            log('Requesting conversation: ' + id, 'sent');
+            socket.emit('request_conversation', id);
+        }
+        
+        function displayMessages(messages) {
+            const messagesEl = document.getElementById('messages');
+            messagesEl.innerHTML = '';
+            
+            messages.forEach(msg => {
+                addMessage(msg.role, msg.content, new Date(msg.date));
+            });
+        }
+        
+        function addMessage(role, content, date = new Date()) {
+            const messagesEl = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message ' + role;
+            
+            const timestamp = date.toLocaleTimeString();
+            messageEl.innerHTML = `<strong>${role}:</strong> ${content}<br><small>${timestamp}</small>`;
+            
+            messagesEl.appendChild(messageEl);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+        
+        function updateStreamingMessage() {
+            const messagesEl = document.getElementById('messages');
+            let streamingEl = messagesEl.querySelector('.streaming-message');
+            
+            if (!streamingEl) {
+                streamingEl = document.createElement('div');
+                streamingEl.className = 'message assistant streaming-message';
+                messagesEl.appendChild(streamingEl);
+            }
+            
+            const timestamp = new Date().toLocaleTimeString();
+            streamingEl.innerHTML = `<strong>assistant:</strong> ${currentResponse}<span style="animation: blink 1s infinite;">|</span><br><small>${timestamp}</small>`;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            log('Sending query: ' + message, 'sent');
+            socket.emit('query', message);
+            
+            addMessage('user', message);
+            input.value = '';
+            currentResponse = '';
+            
+            // Disable send button during response
+            document.getElementById('send-btn').disabled = true;
+        }
+        
+        // Handle Enter key in message input
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Handle Enter key in token input
+        document.getElementById('token-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+        
+        // Add CSS for blinking cursor
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes blink {
+                0%, 50% { opacity: 1; }
+                51%, 100% { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize when page loads
+        initSocket();
+        updateUI();
+    </script>
+</body>
+</html>

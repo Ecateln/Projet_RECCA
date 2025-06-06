@@ -3,9 +3,9 @@ import path from 'path';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { askAgent, generateToken, hashPassword, verifyPassword } from './util/functions.js';
+import { askAgent, cookieParser, generateToken, hashPassword, verifyPassword } from './util/functions.js';
 import { pgp } from './util/globals.js';
-import { createToken, createUser, getUserByToken, getUserByUsername, initializeDatabase, isUsernameFree } from './util/database.js';
+import { createToken, createUser, getUserByToken, getUserByUsername, initializeDatabase, isTokenValid, isUsernameFree } from './util/database.js';
 
 await initializeDatabase();
 
@@ -25,7 +25,7 @@ const app = express();
 const server = createServer(app);
 const socket_server = new Server(server);
 
-app.use(express.json());
+app.use(express.json(), cookieParser);
 app.use('/public', express.static(path.join('public')));
 
 socket_server.on('connection', (socket) => {
@@ -106,10 +106,19 @@ socket_server.on('connection', (socket) => {
     });
 });
 
-app.get(/^\/$|^\/login$/, (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
-app.get('/register', (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
-app.get('/test', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'html', 'test.html')));
-// app.get('/chat', (req, res) => res.status(200).sendFile(path.join(process.cwd(), "public", "html", "test.html")));
+app.get(/.*/, async (req, res, next) => {
+    const token = req.cookies.token;
+    if (token) {
+        const token_valid = await isTokenValid(token);
+        if (!token_valid) return res.clearCookie('token').redirect('/login');
+        else if (req.path !== '/') return res.redirect('/');
+    }
+
+    next();
+});
+app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "temp_chat.html")));
+app.get(/^\/$|^\/login$/i, (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
+app.get('/register', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
 // TODO: favicon link
 
 app.post('/register', async (req, res) => {

@@ -388,8 +388,7 @@ function login() {
         .then(res => {
             if (res.token !== undefined) {
                 document.cookie = `token=${res.token}; expires=${new Date(res.expiresAt).toUTCString()}; path=/; secure; SameSite=Strict`;
-
-                // TODO: redirect to the main page
+                window.location.href = '/';
                 return;
             }
 

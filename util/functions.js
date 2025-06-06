@@ -24,6 +24,17 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
     previous_messages.push(question, { date: Date.now(), role: 'assistant', content: full_response });
 }
 
+// Cookie parser middleware
+function cookieParser(req, res, next) {
+    req.cookies = {};
+    const cookies = req.headers.cookie ? req.headers.cookie.split('; ') : [];
+    for (const cookie of cookies) {
+        const [name, value] = cookie.split('=');
+        req.cookies[name] = decodeURIComponent(value);
+    }
+    next();
+}
+
 function generateToken() {
     return randomBytes(64).toString('base64url');
 }
@@ -42,4 +53,4 @@ function verifyPassword(password, hash) {
     return hashToVerify === storedHash;
 }
 
-export { askAgent, generateToken, hashPassword, verifyPassword }
+export { askAgent, cookieParser, generateToken, hashPassword, verifyPassword }
