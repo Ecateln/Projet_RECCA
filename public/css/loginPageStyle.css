@@ -33,6 +33,26 @@ body {
     z-index: 10;
 }
 
+.shape{
+    display: none;
+    position: absolute;
+    max-width: 50%;
+    height: auto;
+    z-index: 5;
+}
+
+#shape1{
+    bottom: 0;
+    right: 0;
+}
+
+#shape2{
+    top: 0;
+    left: 0;
+}
+
+
+
 .container {
     display: flex;
     height: 100vh;
@@ -230,6 +250,10 @@ input::placeholder {
         max-height: 9.8%;
         top: 8vh;
     }
+
+    .shape {
+        display: block;
+    }
 }
 
 /* For phones */
@@ -256,5 +280,9 @@ input::placeholder {
     .mobile-logo {
         max-width: 75%;
         top: 8vh;
+    }
+
+    .shape {
+        display: block;
     }
 }
