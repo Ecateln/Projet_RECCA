@@ -6,9 +6,10 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
     // TODO: web requests
     // TODO: if no previous messages, append base prompt to the current prompt
 
-    const question = { date: Date.now(), role: 'user', content: prompt };
+    const question = { created_at: new Date(), role: 'user', content: prompt };
     const response = await ollama.chat({
         model: 'qwen3:4b',
+        // model: 'deepseek-r1:8b',
         messages: previous_messages.concat(question),
         stream: true,
         think,
@@ -22,7 +23,7 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
         }
     }
 
-    previous_messages.push(question, { date: Date.now(), role: 'assistant', content: full_response });
+    previous_messages.push(question, { created_at: new Date(), role: 'assistant', content: full_response });
 }
 
 // Authentication check middleware
