@@ -168,7 +168,6 @@ async function createConversation(userId, title) {
             VALUES ($1, $2)
             RETURNING id, title, created_at
         `, [userId, title]);
-        console.log('Conversation created:', conversation);
         return conversation;
     } catch (error) {
         console.error('Error creating conversation:', error.message);
