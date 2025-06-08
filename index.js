@@ -49,7 +49,6 @@ socket_server.on('connection', (socket) => {
         );
     });
 
-    // TODO: rename conversation
     // TODO: update account
 
     socket.on('disconnect', () => {
@@ -133,14 +132,13 @@ app.post('/login', async (req, res) => {
             .json({ error: 'Nom d\'utilisateur ou mot de passe incorrect.' })
             .end();
 
-    console.log('User logged in:', user_data);
+    console.log('User logged in:', user_data.username);
 
     // Generate token
     const token = generateToken();
     const expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days expiration
     const token_data = await createToken(token, user_data.id, expires_at);
 
-    console.log('Token created:', token_data);
     if (!token_data)
         return res.status(500)
             .json({ error: 'Erreur lors de la création du token, veuillez réessayer plus tard.' })

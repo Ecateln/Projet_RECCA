@@ -254,6 +254,135 @@
         .log-entry.error {
             color: #d32f2f;
         }
+
+        /* User Settings Popup Styles */
+        .user-settings-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .popup-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            width: auto;
+            height: auto;
+            padding: 0;
+            margin: 0;
+        }
+
+        .close-btn:hover {
+            color: #333;
+            background: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .popup-buttons button {
+            flex: 1;
+            margin: 0;
+        }
+
+        .cancel-btn {
+            background-color: #6c757d;
+        }
+
+        .cancel-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .user-settings-btn {
+            background-color: #17a2b8;
+            margin-bottom: 10px;
+        }
+
+        .user-settings-btn:hover {
+            background-color: #138496;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 
@@ -272,6 +401,7 @@
                     <div style="color: #666; font-style: italic;">Login first to see conversations</div>
                 </div>
                 <button id="login-btn" onclick="newConversation()">Nouvelle conversation</button>
+                <button id="user-settings-btn" class="user-settings-btn" onclick="openUserSettings()" style="display: none;">Paramètres utilisateur</button>
             </div>
 
             <div class="section">
@@ -292,6 +422,40 @@
                 <input type="text" id="message-input" placeholder="Type your message..." disabled>
                 <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
             </div>
+        </div>
+    </div>
+
+    <!-- User Settings Popup -->
+    <div id="user-settings-popup" class="user-settings-popup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Paramètres utilisateur</h3>
+                <button class="close-btn" onclick="closeUserSettings()">&times;</button>
+            </div>
+            
+            <div id="popup-message"></div>
+            
+            <form id="user-settings-form">
+                <div class="form-group">
+                    <label for="new-username">Nom d'utilisateur (2-32 caractères, lettres, chiffres, _ et -):</label>
+                    <input type="text" id="new-username" name="username" placeholder="Nouveau nom d'utilisateur">
+                </div>
+                
+                <div class="form-group">
+                    <label for="new-password">Nouveau mot de passe (12-64 caractères, doit contenir maj, min, chiffre et caractère spécial):</label>
+                    <input type="password" id="new-password" name="password" placeholder="Nouveau mot de passe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="personalization-info">Informations de personnalisation (max 1024 caractères):</label>
+                    <textarea id="personalization-info" name="personalization_info" placeholder="Décrivez vos préférences pour personnaliser les réponses de l'IA..."></textarea>
+                </div>
+                
+                <div class="popup-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeUserSettings()">Annuler</button>
+                    <button type="submit">Mettre à jour</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -392,6 +556,18 @@
 
                 log('Error: ' + data.error, 'error');
                 addMessage('error', 'Error: ' + data.error);
+                
+                // Show error in popup if it's open
+                showPopupMessage(data.error, 'error');
+            });
+
+            // User update event handlers
+            socket.on('user_updated', (data) => {
+                log('User updated successfully', 'received');
+                showPopupMessage(data.message, 'success');
+                
+                // Clear form after successful update
+                document.getElementById('user-settings-form').reset();
             });
         }
 
@@ -405,10 +581,16 @@
             // const loginBtn = document.getElementById('login-btn');
             const messageInput = document.getElementById('message-input');
             const sendBtn = document.getElementById('send-btn');
+            const userSettingsBtn = document.getElementById('user-settings-btn');
 
             // loginBtn.disabled = isAuthenticated;
             messageInput.disabled = !currentConversation;
             sendBtn.disabled = !currentConversation;
+            
+            // Show user settings button when authenticated
+            if (userSettingsBtn) {
+                userSettingsBtn.style.display = isAuthenticated ? 'block' : 'none';
+            }
         }
 
         function log(message, type = 'info') {
@@ -538,6 +720,70 @@
                 socket.emit('rename_conversation', id, newTitle.trim());
             }
         }
+
+        // User Settings Popup Functions
+        function openUserSettings() {
+            const popup = document.getElementById('user-settings-popup');
+            popup.style.display = 'block';
+            
+            // Clear any previous messages
+            document.getElementById('popup-message').innerHTML = '';
+            
+            // Reset form
+            document.getElementById('user-settings-form').reset();
+        }
+
+        function closeUserSettings() {
+            const popup = document.getElementById('user-settings-popup');
+            popup.style.display = 'none';
+        }
+
+        function showPopupMessage(message, type) {
+            const messageEl = document.getElementById('popup-message');
+            messageEl.className = type === 'error' ? 'error-message' : 'success-message';
+            messageEl.textContent = message;
+        }
+
+        // Handle user settings form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('user-settings-form');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(form);
+                    const updates = {};
+                    
+                    // Only include fields that have values
+                    const username = formData.get('username').trim();
+                    const password = formData.get('password').trim();
+                    const personalizationInfo = formData.get('personalization_info').trim();
+                    
+                    if (username) updates.username = username;
+                    if (password) updates.password = password;
+                    if (personalizationInfo) updates.personalization_info = personalizationInfo;
+                    
+                    // Check if at least one field is filled
+                    if (Object.keys(updates).length === 0) {
+                        showPopupMessage('Veuillez remplir au moins un champ à mettre à jour.', 'error');
+                        return;
+                    }
+                    
+                    log('Updating user settings', 'sent');
+                    socket.emit('user_update', updates);
+                });
+            }
+
+            // Close popup when clicking outside
+            const popup = document.getElementById('user-settings-popup');
+            if (popup) {
+                popup.addEventListener('click', (e) => {
+                    if (e.target === popup) {
+                        closeUserSettings();
+                    }
+                });
+            }
+        });
 
         function sendMessage() {
             const input = document.getElementById('message-input');

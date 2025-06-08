@@ -303,6 +303,44 @@ async function renameConversation(conversationId, newTitle) {
     }
 }
 
+// UPDATE USER
+async function updateUser(userId, updates) {
+    try {
+        const { username, password_hash, personalization_info } = updates;
+        const setParts = [];
+        const values = [];
+        let valueIndex = 1;
+
+        if (username) {
+            setParts.push(`username = $${valueIndex++}`);
+            values.push(username);
+        }
+        if (password_hash) {
+            setParts.push(`password_hash = $${valueIndex++}`);
+            values.push(password_hash);
+        }
+        if (personalization_info) {
+            setParts.push(`personalization_info = $${valueIndex++}`);
+            values.push(personalization_info);
+        }
+
+        if (setParts.length === 0) return null;
+
+        values.push(userId);
+        const result = await db.result(`
+            UPDATE users
+            SET ${setParts.join(', ')}
+            WHERE id = $${valueIndex}
+        `, values);
+
+        if (result.rowCount === 0) return null;
+        return userId;
+    } catch (error) {
+        console.error('Error updating user:', error.message);
+        return null;
+    }
+}
+
 export {
     initializeDatabase,
     createUser,
@@ -319,4 +357,5 @@ export {
     isTokenValid,
     deleteConversation,
     renameConversation,
+    updateUser,
 };
