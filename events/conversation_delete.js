@@ -24,6 +24,6 @@ export async function run(io, socket, conversation_id) {
         });
     } catch (error) {
         console.error('Error deleting conversation:', error.message);
-        socket.emit("error", { error: "Failed to delete conversation." });
+        socket.emit("error", { error: "Une erreur est survenue lors de la suppression de la conversation." });
     }
 }
