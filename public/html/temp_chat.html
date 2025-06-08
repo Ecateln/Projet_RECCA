@@ -480,7 +480,7 @@
             element.classList.add('selected');
 
             log('Requesting conversation: ' + id, 'sent');
-            socket.emit('request_conversation', id);
+            socket.emit('conversation_fetch', id);
         }
 
         function displayMessages(messages) {
@@ -521,7 +521,7 @@
 
         function newConversation(title = "Boubouboubou") {
             log('Created new conversation: ' + title, 'sent');
-            socket.emit('create_conversation', title);
+            socket.emit('conversation_create', title);
         }
 
         function deleteConversation(id, title) {

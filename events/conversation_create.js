@@ -1,6 +1,6 @@
 import { createConversation } from "../util/database.js";
 
-export const name = "create_conversation";
+export const name = "conversation_create";
 export const cooldown = 10000;
 export const requires_login = true;
 

@@ -1,6 +1,6 @@
 import { loadConversationMessages } from "../util/functions.js";
 
-export const name = "request_conversation";
+export const name = "conversation_fetch";
 export const cooldown = 250;
 export const requires_login = true;
 
