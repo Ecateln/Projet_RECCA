@@ -29,8 +29,8 @@ export async function run(io, socket, token) {
             last_message_at: c.last_message_at,
             messages: null,
         })),
-        active_query: false,
         current_conversation: null,
+        password_hash: user_data.password_hash,
     };
 
     socket.emit(

@@ -1,5 +1,5 @@
 import { updateUser, isUsernameFree, getUserById } from '../util/database.js';
-import { hashPassword } from '../util/functions.js';
+import { hashPassword, validatePasswordFormat, validateUsernameFormat, verifyPassword } from '../util/functions.js';
 
 export const name = "user_update";
 export const cooldown = 5000;
@@ -8,23 +8,14 @@ export const requires_login = true;
 export async function run(io, socket, updates) {
     if (!updates || typeof updates !== "object") return;
 
-    const { username, password, personalization_info } = updates;
+    const { username, old_password, password, personalization_info } = updates;
 
     // TODO: check that the previous password is correct if password is being updated
 
     // Validate username if provided
     if (username !== undefined) {
-        if (typeof username !== "string") {
-            return socket.emit("error", { error: "Le nom d'utilisateur doit être une chaîne de caractères." });
-        }
-
-        if (username.length < 2 || username.length > 32) {
-            return socket.emit("error", { error: "Le nom d'utilisateur doit être compris entre 2 et 32 caractères." });
-        }
-
-        if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-            return socket.emit("error", { error: "Le nom d'utilisateur ne doit contenir que des lettres, des chiffres et des tirets." });
-        }
+        const error = validateUsernameFormat(username);
+        if (error) return socket.emit("error", error);
 
         // Check if username is already taken (but not by current user)
         // We need to get current user's username first to avoid conflict with their own username
@@ -39,21 +30,11 @@ export async function run(io, socket, updates) {
 
     // Validate password if provided
     if (password !== undefined) {
-        if (typeof password !== "string") {
-            return socket.emit("error", { error: "Le mot de passe doit être une chaîne de caractères." });
-        }
+        const error = validatePasswordFormat(password);
+        if (error) return socket.emit("error", error);
 
-        if (password.length < 12 || password.length > 64) {
-            return socket.emit("error", { error: "Le mot de passe doit être compris entre 12 et 64 caractères." });
-        }
-
-        if (
-            !/[a-z]/.test(password) ||
-            !/[A-Z]/.test(password) ||
-            !/[0-9]/.test(password) ||
-            !/[!@#$%^&*(),.?"':{}|<>+-]/.test(password)
-        ) {
-            return socket.emit("error", { error: "Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial." });
+        if (!verifyPassword(old_password, socket.user_data.password_hash)) {
+            return socket.emit("error", { error: "L'ancien mot de passe est incorrect." });
         }
     }
 

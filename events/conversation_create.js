@@ -1,4 +1,5 @@
 import { createConversation } from "../util/database.js";
+import { active_queries } from "../util/globals.js";
 
 export const name = "conversation_create";
 export const cooldown = 10000;
@@ -6,7 +7,7 @@ export const requires_login = true;
 
 export async function run(io, socket, title) {
     if (typeof title !== "string") return;
-    if (socket.user_data.active_query) return socket.emit("error", { error: "Veuillez attendre la fin de la réponse avant de créer une nouvelle conversation." });
+    if (active_queries.has(socket.user_data.id)) return socket.emit("error", { error: "Veuillez attendre la fin de la réponse avant de créer une nouvelle conversation." });
 
     if (socket.user_data.conversations.length == 10) {
         return socket.emit("error", { error: "Vous avez atteint le nombre maximum de conversations." });

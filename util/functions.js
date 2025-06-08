@@ -5,6 +5,8 @@ import { getConversationMessages, isTokenValid } from './database.js';
 async function* askAgent(prompt, previous_messages, think = false, web = false) {
     // TODO: web requests
     // TODO: if no previous messages, append base prompt to the current prompt
+    // TODO: add user personalization to the prompt
+    // TODO: add the ability to cancel the query
 
     const question = { created_at: new Date(), role: 'user', content: prompt };
     const response = await ollama.chat({
@@ -78,6 +80,35 @@ async function loadConversationMessages(conversation) {
     return true;
 }
 
+function validatePasswordFormat(password) {
+    if (typeof password !== "string")
+        return { error: "Le mot de passe doit être une chaîne de caractères." };
+
+    if (password.length < 12 || password.length > 64)
+        return { error: 'La longueur du mot de passe doit être comprise entre 12 et 64 caractères.' };
+
+    if (!/[a-z]/.test(password) ||
+        !/[A-Z]/.test(password) ||
+        !/[0-9]/.test(password) ||
+        !/[!@#$%^&*(),.?"':{}|<>+-]/.test(password)
+    ) return { error: 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.' };
+
+    return null;
+}
+
+function validateUsernameFormat(username) {
+    if (typeof username !== "string")
+        return { error: "Le nom d'utilisateur doit être une chaîne de caractères." };
+
+    if (username.length < 2 || username.length > 20)
+        return { error: 'La longueur du nom d\'utilisateur doit être comprise entre 2 et 20 caractères.' };
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(username))
+        return { error: 'Le nom d\'utilisateur ne doit contenir que des lettres, des chiffres et des tirets.' };
+
+    return null;
+}
+
 function verifyPassword(password, hash) {
     const [salt, storedHash] = hash.split('$');
     const hashToVerify = pbkdf2Sync(password, salt, 10000, 512, 'sha512').toString('base64');
@@ -85,4 +116,14 @@ function verifyPassword(password, hash) {
     return hashToVerify === storedHash;
 }
 
-export { askAgent, checkAuthentication, cookieParser, generateToken, hashPassword, loadConversationMessages, verifyPassword }
+export {
+    askAgent,
+    checkAuthentication,
+    cookieParser,
+    generateToken,
+    hashPassword,
+    loadConversationMessages,
+    validatePasswordFormat,
+    validateUsernameFormat,
+    verifyPassword,
+}

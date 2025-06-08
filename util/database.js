@@ -135,7 +135,7 @@ async function getUserByUsername(username) {
 async function getUserByToken(token) {
     try {
         const user = await db.oneOrNone(`
-            SELECT u.id, u.username, u.personalization_info
+            SELECT u.id, u.username, u.personalization_info, u.password_hash
             FROM tokens t
             JOIN users u ON t.user_id = u.id
             WHERE t.value = $1 AND t.expires_at > CURRENT_TIMESTAMP

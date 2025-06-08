@@ -3,7 +3,7 @@ import path from 'path';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { checkAuthentication, cookieParser, generateToken, hashPassword, verifyPassword } from './util/functions.js';
+import { checkAuthentication, cookieParser, generateToken, hashPassword, validatePasswordFormat, validateUsernameFormat, verifyPassword } from './util/functions.js';
 import { pgp } from './util/globals.js';
 import { createToken, createUser, getUserByUsername, initializeDatabase, isUsernameFree } from './util/database.js';
 import { readdirSync } from 'fs';
@@ -67,41 +67,16 @@ app.post('/register', async (req, res) => {
     console.log(req.body);
     if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
         return res.status(400)
-            .send('Invalid request body')
-            .end();
+            .send('Invalid request body');
 
-
-    if (body.username.length < 2 || body.username.length > 20)
-        return res.status(400)
-            .json({ error: 'La longueur du nom d\'utilisateur doit être comprise entre 2 et 20 caractères.' })
-            .end();
-
-    if (body.password.length < 12 || body.password.length > 64)
-        return res.status(400)
-            .json({ error: 'La longueur du mot de passe doit être comprise entre 12 et 64 caractères.' })
-            .end();
-
-    if (!/[a-zA-Z0-9_-]/.test(body.username))
-        return res.status(400)
-            .json({ error: 'Le nom d\'utilisateur ne doit contenir que des lettres, des chiffres et des tirets.' })
-            .end();
-
-    if (
-        !/[a-z]/.test(body.password) ||
-        !/[A-Z]/.test(body.password) ||
-        !/[0-9]/.test(body.password) ||
-        !/[!@#$%^&*(),.?"':{}|<>+-]/.test(body.password)
-    )
-        return res.status(400)
-            .json({ error: 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.' })
-            .end();
+    const error = validateUsernameFormat(body.username) || validatePasswordFormat(body.password);
+    if (error) return res.status(400).json(error);
 
     // Check if username already exists
     const is_free = await isUsernameFree(body.username);
     if (!is_free)
         return res.status(400)
-            .json({ error: 'Un utilisateur avec ce nom d\'utilisateur existe déjà.' })
-            .end();
+            .json({ error: 'Un utilisateur avec ce nom d\'utilisateur existe déjà.' });
 
     // Hash password
     const hash = hashPassword(body.password);
@@ -109,8 +84,7 @@ app.post('/register', async (req, res) => {
 
     if (!user)
         return res.status(500)
-            .json({ error: 'Erreur lors de l\'inscription, veuillez réessayer plus tard.' })
-            .end();
+            .json({ error: 'Erreur lors de l\'inscription, veuillez réessayer plus tard.' });
 
     res.status(201).end();
 });
