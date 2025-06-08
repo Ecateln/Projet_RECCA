@@ -1,0 +1,7 @@
+export const name = CHANGE_ME;
+export const cooldown = 0;
+export const requires_login = false;
+
+export async function run(io, socket, ...) {
+
+}

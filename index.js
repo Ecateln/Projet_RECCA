@@ -3,9 +3,10 @@ import path from 'path';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { askAgent, checkAuthentication, cookieParser, generateToken, hashPassword, loadConversationMessages, verifyPassword } from './util/functions.js';
+import { checkAuthentication, cookieParser, generateToken, hashPassword, verifyPassword } from './util/functions.js';
 import { pgp } from './util/globals.js';
-import { addMessage, createConversation, createToken, createUser, getConversationMessages, getUserByToken, getUserByUsername, getUserConversations, initializeDatabase, isTokenValid, isUsernameFree } from './util/database.js';
+import { createToken, createUser, getUserByUsername, initializeDatabase, isUsernameFree } from './util/database.js';
+import { readdirSync } from 'fs';
 
 await initializeDatabase();
 
@@ -28,137 +29,28 @@ const socket_server = new Server(server);
 app.use(cookieParser, checkAuthentication, express.json());
 app.use('/public', express.static(path.join('public')));
 
+const socket_events = await Promise.all(
+    readdirSync(path.join(process.cwd(), 'events'))
+        .filter(filename => filename.endsWith('.js'))
+        .map(f => import(path.join(process.cwd(), 'events', f)))
+);
+
 socket_server.on('connection', (socket) => {
     socket.user_data = null;
 
-    socket.on('login', async (token) => {
-        if (typeof token !== "string") return;
-        if (socket.user_data) return socket.disconnect();
-
-        const user_data = await getUserByToken(token);
-        if (!user_data) {
-            socket.emit('error', { error: 'Token invalide ou expiré.', redirect: '/login' });
-            return socket.disconnect();
-        }
-
-        const conversations = await getUserConversations(user_data.id);
-        if (!conversations) {
-            socket.emit('error', { error: 'Erreur lors du chargement des conversations.' });
-            return;
-        }
-
-        socket.user_data = {
-            id: user_data.id,
-            conversations: conversations.map(c => ({
-                id: c.id,
-                title: c.title,
-                created_at: c.created_at,
-                last_message_at: c.last_message_at,
-                messages: null,
-            })),
-            active_query: false,
-            current_conversation: null,
-        };
-
-        // return console.log(user_data, convs);
-        socket.emit(
-            'login_success',
-            socket.user_data.conversations.map(({ id, title }) => ({ id, title })),
+    socket_events.forEach(event => {
+        // TODO: cooldown handler
+        socket.on(
+            event.name,
+            (...args) => {
+                if (event.requires_login && !socket.user_data) return;
+                event.run(socket_server, socket, ...args);
+            },
         );
     });
 
-    socket.on("request_conversation", async (conversation_id) => {
-        if (typeof conversation_id !== "number" || !socket.user_data) return;
-
-        const conv_i = socket.user_data.conversations.findIndex(c => c.id == conversation_id);
-        if (conv_i == -1) {
-            socket.emit('error', { error: 'Conversation introuvable.' });
-            return;
-        }
-
-        const conversation = socket.user_data.conversations[conv_i];
-        if (!conversation.messages && !await loadConversationMessages(conversation)) {
-            return socket.emit('error', { error: 'Erreur lors du chargement des messages de la conversation.' });
-        }
-
-        socket.user_data.current_conversation = socket.user_data.conversations[conv_i];
-        socket.emit("conversation", socket.user_data.current_conversation);
-    });
-
-    socket.on("create_conversation", async (title = 'Nouvelle Conversation') => {
-        if (typeof title !== "string" || !socket.user_data) return;
-        if (socket.user_data.conversations.length == 10) {
-            return socket.emit("error", { error: "Vous avez atteint le nombre maximum de conversations." });
-        }
-
-        if (title.length < 2 || title.length > 64) {
-            return socket.emit("error", { error: "Le titre de la conversation doit être compris entre 2 et 64 caractères." });
-        }
-
-        const new_conversation = await createConversation(socket.user_data.id, title);
-        if (!new_conversation) {
-            return socket.emit("error", { error: "Erreur lors de la création de la conversation." });
-        }
-
-        socket.user_data.conversations.push({
-            id: new_conversation.id,
-            title: new_conversation.title,
-            created_at: new_conversation.created_at,
-            last_message_at: null,
-            messages: [],
-        });
-
-        socket.emit("conversation_created", new_conversation);
-    });
-
     // TODO: delete conversation
-
-    socket.on("query", async (conversation_id, prompt, enable_web = false) => {
-        if (typeof prompt !== "string" || typeof conversation_id != "number" || typeof enable_web != "boolean" || !socket.user_data) return;
-        if (socket.user_data.active_query) return socket.emit("error", { error: "Une réponse est déjà en cours." });
-
-        // Validate prompt size
-        prompt = prompt.trim();
-        if (prompt.length == 0 || prompt.length > 10000) {
-            return socket.emit("error", { error: "La taille du message doit être inferieure à 10000 caractères." });
-        }
-
-        // Change conversation if needed
-        if (!socket.user_data.current_conversation || socket.user_data.current_conversation.id != conversation_id) {
-            const conversation = socket.user_data.conversations.find(c => c.id == conversation_id);
-            if (!conversation) return socket.emit("error", { error: "Conversation introuvable." });
-
-            if (!conversation.messages && !await loadConversationMessages(conversation)) {
-                return socket.emit('error', { error: 'Erreur lors du chargement des messages de la conversation.' });
-            }
-
-            socket.user_data.current_conversation = conversation;
-        }
-
-        socket.user_data.active_query = true;
-
-        try {
-            const response_stream = askAgent(prompt, socket.user_data.current_conversation.messages, false, enable_web);
-            for await (const token of response_stream)
-                socket.emit("res", token);
-
-            for (const m of socket.user_data.current_conversation.messages.slice(-2)) {
-                console.log(m);
-                await addMessage(
-                    socket.user_data.current_conversation.id,
-                    m.role,
-                    m.content,
-                    m.created_at,
-                );
-            }
-        } catch (error) {
-            console.error("Error during query:", error);
-            socket.emit("error", { error: "Une erreur est survenue lors de la réponse." });
-        } finally {
-            socket.user_data.active_query = false;
-            socket.emit("res", null);
-        }
-    });
+    // TODO: update account
 
     socket.on('disconnect', () => {
         // TODO: gracefully handle disconnect
@@ -261,8 +153,6 @@ app.post('/login', async (req, res) => {
         })
         .end();
 });
-
-// TODO: update account
 
 app.all(/(.*)/, (req, res) => res.redirect("https://youtu.be/dQw4w9WgXcQ"));
 
