@@ -10,8 +10,6 @@ export async function run(io, socket, updates) {
 
     const { username, old_password, password, personalization_info } = updates;
 
-    // TODO: check that the previous password is correct if password is being updated
-
     // Validate username if provided
     if (username !== undefined) {
         const error = validateUsernameFormat(username);

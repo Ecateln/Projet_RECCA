@@ -442,6 +442,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="old-password">Ancien mot de passe (requis pour changer le mot de passe):</label>
+                    <input type="password" id="old-password" name="old_password" placeholder="Ancien mot de passe">
+                </div>
+                
+                <div class="form-group">
                     <label for="new-password">Nouveau mot de passe (12-64 caractères, doit contenir maj, min, chiffre et caractère spécial):</label>
                     <input type="password" id="new-password" name="password" placeholder="Nouveau mot de passe">
                 </div>
@@ -757,10 +762,18 @@
                     // Only include fields that have values
                     const username = formData.get('username').trim();
                     const password = formData.get('password').trim();
+                    const oldPassword = formData.get('old_password').trim();
                     const personalizationInfo = formData.get('personalization_info').trim();
                     
                     if (username) updates.username = username;
-                    if (password) updates.password = password;
+                    if (password) {
+                        if (!oldPassword) {
+                            showPopupMessage('L\'ancien mot de passe est requis pour changer le mot de passe.', 'error');
+                            return;
+                        }
+                        updates.password = password;
+                        updates.old_password = oldPassword;
+                    }
                     if (personalizationInfo) updates.personalization_info = personalizationInfo;
                     
                     // Check if at least one field is filled
