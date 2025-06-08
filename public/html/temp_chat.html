@@ -139,6 +139,29 @@
             white-space: nowrap;
         }
 
+        .conversation-actions {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .rename-btn {
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 0;
+            width: auto;
+        }
+
+        .rename-btn:hover {
+            background-color: #1976d2;
+        }
+
         .delete-btn {
             background-color: #f44336;
             color: white;
@@ -149,8 +172,6 @@
             font-size: 12px;
             margin: 0;
             width: auto;
-            flex-shrink: 0;
-            margin-left: 10px;
         }
 
         .delete-btn:hover {
@@ -352,6 +373,20 @@
                 }
             });
 
+            socket.on('conversation_renamed', (data) => {
+                log('Conversation renamed to: ' + data.title, 'received');
+                const conversation = conversations.find(conv => conv.id === data.id);
+                if (conversation) {
+                    conversation.title = data.title;
+                    displayConversations(conversations);
+                    
+                    // Update current conversation title if it's the one being renamed
+                    if (currentConversation && currentConversation.id === data.id) {
+                        currentConversation.title = data.title;
+                    }
+                }
+            });
+
             socket.on('error', (data) => {
                 if (data.redirect) window.location.href = data.redirect;
 
@@ -398,6 +433,18 @@
                 titleSpan.textContent = conv.title;
                 titleSpan.onclick = () => selectConversation(conv.id, item);
 
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'conversation-actions';
+
+                const renameBtn = document.createElement('button');
+                renameBtn.className = 'rename-btn';
+                renameBtn.textContent = '✏';
+                renameBtn.title = 'Rename conversation';
+                renameBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    renameConversation(conv.id, conv.title);
+                };
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.textContent = '×';
@@ -407,8 +454,10 @@
                     deleteConversation(conv.id, conv.title);
                 };
 
+                actionsDiv.appendChild(renameBtn);
+                actionsDiv.appendChild(deleteBtn);
                 item.appendChild(titleSpan);
-                item.appendChild(deleteBtn);
+                item.appendChild(actionsDiv);
                 listEl.appendChild(item);
             });
 
@@ -479,6 +528,14 @@
             if (confirm(`Are you sure you want to delete the conversation "${title}"?`)) {
                 log('Deleting conversation: ' + title, 'sent');
                 socket.emit('delete_conversation', id);
+            }
+        }
+
+        function renameConversation(id, currentTitle) {
+            const newTitle = prompt(`Rename conversation:`, currentTitle);
+            if (newTitle && newTitle.trim() && newTitle.trim() !== currentTitle) {
+                log('Renaming conversation: ' + currentTitle + ' to ' + newTitle.trim(), 'sent');
+                socket.emit('rename_conversation', id, newTitle.trim());
             }
         }
 

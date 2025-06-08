@@ -286,6 +286,23 @@ async function deleteConversation(conversationId) {
     }
 }
 
+// RENAME CONVERSATION
+async function renameConversation(conversationId, newTitle) {
+    try {
+        const result = await db.result(`
+            UPDATE conversations
+            SET title = $1
+            WHERE id = $2
+        `, [newTitle, conversationId]);
+
+        if (result.rowCount === 0) return null;
+        return conversationId;
+    } catch (error) {
+        console.error('Error renaming conversation:', error.message);
+        return null;
+    }
+}
+
 export {
     initializeDatabase,
     createUser,
@@ -301,4 +318,5 @@ export {
     getUserByToken,
     isTokenValid,
     deleteConversation,
+    renameConversation,
 };
