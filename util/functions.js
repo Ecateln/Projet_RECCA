@@ -10,6 +10,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
     const response = await ollama.chat({
         model: 'qwen3:4b',
         // model: 'deepseek-r1:8b',
+        // model: 'gemma3:4b',
+        // model: 'mistral:7b',
         messages: previous_messages.concat(question),
         stream: true,
         think,

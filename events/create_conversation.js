@@ -1,3 +1,5 @@
+import { createConversation } from "../util/database.js";
+
 export const name = "create_conversation";
 export const cooldown = 10000;
 export const requires_login = true;
@@ -14,7 +16,15 @@ export async function run(io, socket, title) {
         return socket.emit("error", { error: "Le titre de la conversation doit être compris entre 2 et 64 caractères." });
     }
 
-    // TODO: check if the user already has a conversation with the same title
+    // Check if the user already has a conversation with the same title
+    const conversations = socket.user_data.conversations;
+    if (conversations.some(c => c.title === title)) {
+        let i = 2;
+        while (conversations.some(c => c.title === `${title} (${i})`)) {
+            ++i;
+        }
+        title = `${title} (${i})`;
+    }
 
     const new_conversation = await createConversation(socket.user_data.id, title);
     if (!new_conversation) {
