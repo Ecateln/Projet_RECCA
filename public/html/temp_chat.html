@@ -362,7 +362,7 @@
             messagesEl.innerHTML = '';
 
             messages.forEach(msg => {
-                addMessage(msg.role, msg.content, new Date(msg.date));
+                addMessage(msg.role, msg.content, new Date(msg.created_at));
             });
         }
 
