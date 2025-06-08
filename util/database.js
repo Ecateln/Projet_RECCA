@@ -270,6 +270,22 @@ async function isTokenValid(token) {
     }
 }
 
+// DELETE CONVERSATION
+async function deleteConversation(conversationId) {
+    try {
+        const result = await db.result(`
+            DELETE FROM conversations
+            WHERE id = $1
+        `, [conversationId]);
+
+        if (result.rowCount == 0) return null;
+        return conversationId;
+    } catch (error) {
+        console.error('Error deleting conversation:', error.message);
+        return null;
+    }
+}
+
 export {
     initializeDatabase,
     createUser,
@@ -284,4 +300,5 @@ export {
     getFullConversation,
     getUserByToken,
     isTokenValid,
+    deleteConversation,
 };

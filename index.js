@@ -49,7 +49,7 @@ socket_server.on('connection', (socket) => {
         );
     });
 
-    // TODO: delete conversation
+    // TODO: rename conversation
     // TODO: update account
 
     socket.on('disconnect', () => {

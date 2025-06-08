@@ -118,6 +118,9 @@
             margin: 5px 0;
             cursor: pointer;
             background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .conversation-item:hover {
@@ -127,6 +130,31 @@
         .conversation-item.selected {
             background-color: #e3f2fd;
             border-color: #1976d2;
+        }
+
+        .conversation-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 0;
+            width: auto;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
         }
 
         .messages {
@@ -252,6 +280,7 @@
         let currentConversation = null;
         let isAuthenticated = false;
         let currentResponse = '';
+        let conversations = [];
 
         // Initialize socket connection
         function initSocket() {
@@ -272,11 +301,11 @@
                 updateUI();
             });
 
-            socket.on('login_success', (conversations) => {
+            socket.on('login_success', (data) => {
                 log('Login successful', 'received');
                 updateStatus('authenticated', 'Authenticated');
                 isAuthenticated = true;
-                displayConversations(conversations);
+                displayConversations(conversations = data);
                 updateUI();
             });
 
@@ -304,9 +333,23 @@
             });
 
             socket.on('conversation_created', (conversation) => {
+                conversations.unshift(conversation);
                 log('New conversation created: ' + conversation.title, 'received');
-                displayConversations([conversation]);
+                displayConversations(conversations);
                 selectConversation(conversation.id, document.querySelector('.conversation-item:last-child'));
+            });
+
+            socket.on('conversation_deleted', (data) => {
+                log('Conversation deleted: ' + data.title, 'received');
+                conversations = conversations.filter(conv => conv.id !== data.id);
+                displayConversations(conversations);
+
+                // If the deleted conversation was the current one, clear the chat
+                if (currentConversation && currentConversation.id === data.id) {
+                    currentConversation = null;
+                    document.getElementById('messages').innerHTML = '<div style="color: #666; font-style: italic;">Select a conversation to start chatting</div>';
+                    updateUI();
+                }
             });
 
             socket.on('error', (data) => {
@@ -349,8 +392,23 @@
             conversations.forEach(conv => {
                 const item = document.createElement('div');
                 item.className = 'conversation-item';
-                item.textContent = conv.title;
-                item.onclick = () => selectConversation(conv.id, item);
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'conversation-title';
+                titleSpan.textContent = conv.title;
+                titleSpan.onclick = () => selectConversation(conv.id, item);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Delete conversation';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteConversation(conv.id, conv.title);
+                };
+
+                item.appendChild(titleSpan);
+                item.appendChild(deleteBtn);
                 listEl.appendChild(item);
             });
 
@@ -415,6 +473,13 @@
         function newConversation(title = "Boubouboubou") {
             log('Created new conversation: ' + title, 'sent');
             socket.emit('create_conversation', title);
+        }
+
+        function deleteConversation(id, title) {
+            if (confirm(`Are you sure you want to delete the conversation "${title}"?`)) {
+                log('Deleting conversation: ' + title, 'sent');
+                socket.emit('delete_conversation', id);
+            }
         }
 
         function sendMessage() {
