@@ -49,8 +49,6 @@ socket_server.on('connection', (socket) => {
         );
     });
 
-    // TODO: update account
-
     socket.on('disconnect', () => {
         // TODO: gracefully handle disconnect
 

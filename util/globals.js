@@ -21,4 +21,7 @@ const db = pgp({
 // Create Ollama instance
 const ollama = new Ollama({ host: process.env.OLLAMA_SERVER_URL });
 
-export { ollama, db, pgp };
+// Tracks active queries to prevent multiple simultaneous requests from the same user across sockets
+const active_queries = new Set();
+
+export { ollama, db, pgp, active_queries };

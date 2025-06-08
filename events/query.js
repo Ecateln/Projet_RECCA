@@ -1,5 +1,6 @@
 import { addMessage } from "../util/database.js";
 import { askAgent, loadConversationMessages } from "../util/functions.js";
+import { active_queries } from "../util/globals.js";
 
 export const name = "query";
 export const cooldown = 1000;
@@ -7,7 +8,7 @@ export const requires_login = true;
 
 export async function run(io, socket, conversation_id, prompt, enable_web = false) {
     if (typeof prompt !== "string" || typeof conversation_id != "number" || typeof enable_web != "boolean") return;
-    if (socket.user_data.active_query) return socket.emit("error", { error: "Veuillez attendre la fin de la réponse avant de poser une nouvelle question." });
+    if (active_queries.has(socket.user_data.id)) return socket.emit("error", { error: "Veuillez attendre la fin de la réponse avant de poser une nouvelle question." });
 
     // Validate prompt size
     prompt = prompt.trim();
@@ -27,7 +28,7 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
         socket.user_data.current_conversation = conversation;
     }
 
-    socket.user_data.active_query = true;
+    active_queries.add(socket.user_data.id);
 
     try {
         const response_stream = askAgent(prompt, socket.user_data.current_conversation.messages, false, enable_web);
@@ -47,7 +48,7 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
         console.error("Error during query:", error);
         socket.emit("error", { error: "Une erreur est survenue lors de la réponse." });
     } finally {
-        socket.user_data.active_query = false;
+        active_queries.delete(socket.user_data.id);
         socket.emit("res", null);
     }
 }
