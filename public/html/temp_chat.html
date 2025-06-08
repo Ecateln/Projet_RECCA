@@ -77,6 +77,17 @@
             width: 100%;
         }
 
+        .input-area button {
+            width: auto;
+            padding: 12px 24px;
+            margin: 0;
+            flex-shrink: 0;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         button:hover {
             background-color: #45a049;
         }
@@ -154,10 +165,18 @@
         .input-area {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
         .input-area input {
             flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            height: 46px;
+            box-sizing: border-box;
+            margin: 0;
         }
 
         .logs {
