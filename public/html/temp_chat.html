@@ -401,7 +401,8 @@
                     <div style="color: #666; font-style: italic;">Login first to see conversations</div>
                 </div>
                 <button id="login-btn" onclick="newConversation()">Nouvelle conversation</button>
-                <button id="user-settings-btn" class="user-settings-btn" onclick="openUserSettings()" style="display: none;">Paramètres utilisateur</button>
+                <button id="user-settings-btn" class="user-settings-btn" onclick="openUserSettings()"
+                    style="display: none;">Paramètres utilisateur</button>
             </div>
 
             <div class="section">
@@ -432,30 +433,32 @@
                 <h3>Paramètres utilisateur</h3>
                 <button class="close-btn" onclick="closeUserSettings()">&times;</button>
             </div>
-            
+
             <div id="popup-message"></div>
-            
+
             <form id="user-settings-form">
                 <div class="form-group">
                     <label for="new-username">Nom d'utilisateur (2-32 caractères, lettres, chiffres, _ et -):</label>
                     <input type="text" id="new-username" name="username" placeholder="Nouveau nom d'utilisateur">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="old-password">Ancien mot de passe (requis pour changer le mot de passe):</label>
                     <input type="password" id="old-password" name="old_password" placeholder="Ancien mot de passe">
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="new-password">Nouveau mot de passe (12-64 caractères, doit contenir maj, min, chiffre et caractère spécial):</label>
+                    <label for="new-password">Nouveau mot de passe (12-64 caractères, doit contenir maj, min, chiffre et
+                        caractère spécial):</label>
                     <input type="password" id="new-password" name="password" placeholder="Nouveau mot de passe">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="personalization-info">Informations de personnalisation (max 1024 caractères):</label>
-                    <textarea id="personalization-info" name="personalization_info" placeholder="Décrivez vos préférences pour personnaliser les réponses de l'IA..."></textarea>
+                    <textarea id="personalization-info" name="personalization_info"
+                        placeholder="Décrivez vos préférences pour personnaliser les réponses de l'IA..."></textarea>
                 </div>
-                
+
                 <div class="popup-buttons">
                     <button type="button" class="cancel-btn" onclick="closeUserSettings()">Annuler</button>
                     <button type="submit">Mettre à jour</button>
@@ -511,6 +514,8 @@
                     // End of response
                     log('Response complete', 'received');
                     if (currentResponse.trim()) {
+                        // Remove streaming message and add final message
+                        removeStreamingMessage();
                         addMessage('assistant', currentResponse);
                         currentResponse = '';
                     }
@@ -548,7 +553,7 @@
                 if (conversation) {
                     conversation.title = data.title;
                     displayConversations(conversations);
-                    
+
                     // Update current conversation title if it's the one being renamed
                     if (currentConversation && currentConversation.id === data.id) {
                         currentConversation.title = data.title;
@@ -561,7 +566,7 @@
 
                 log('Error: ' + data.error, 'error');
                 addMessage('error', 'Error: ' + data.error);
-                
+
                 // Show error in popup if it's open
                 showPopupMessage(data.error, 'error');
             });
@@ -570,7 +575,7 @@
             socket.on('user_updated', (data) => {
                 log('User updated successfully', 'received');
                 showPopupMessage(data.message, 'success');
-                
+
                 // Clear form after successful update
                 document.getElementById('user-settings-form').reset();
             });
@@ -591,7 +596,7 @@
             // loginBtn.disabled = isAuthenticated;
             messageInput.disabled = !currentConversation;
             sendBtn.disabled = !currentConversation;
-            
+
             // Show user settings button when authenticated
             if (userSettingsBtn) {
                 userSettingsBtn.style.display = isAuthenticated ? 'block' : 'none';
@@ -706,6 +711,14 @@
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
 
+        function removeStreamingMessage() {
+            const messagesEl = document.getElementById('messages');
+            const streamingEl = messagesEl.querySelector('.streaming-message');
+            if (streamingEl) {
+                streamingEl.remove();
+            }
+        }
+
         function newConversation(title = "Boubouboubou") {
             log('Created new conversation: ' + title, 'sent');
             socket.emit('conversation_create', title);
@@ -730,10 +743,10 @@
         function openUserSettings() {
             const popup = document.getElementById('user-settings-popup');
             popup.style.display = 'block';
-            
+
             // Clear any previous messages
             document.getElementById('popup-message').innerHTML = '';
-            
+
             // Reset form
             document.getElementById('user-settings-form').reset();
         }
@@ -755,16 +768,16 @@
             if (form) {
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
-                    
+
                     const formData = new FormData(form);
                     const updates = {};
-                    
+
                     // Only include fields that have values
                     const username = formData.get('username').trim();
                     const password = formData.get('password').trim();
                     const oldPassword = formData.get('old_password').trim();
                     const personalizationInfo = formData.get('personalization_info').trim();
-                    
+
                     if (username) updates.username = username;
                     if (password) {
                         if (!oldPassword) {
@@ -775,13 +788,13 @@
                         updates.old_password = oldPassword;
                     }
                     if (personalizationInfo) updates.personalization_info = personalizationInfo;
-                    
+
                     // Check if at least one field is filled
                     if (Object.keys(updates).length === 0) {
                         showPopupMessage('Veuillez remplir au moins un champ à mettre à jour.', 'error');
                         return;
                     }
-                    
+
                     log('Updating user settings', 'sent');
                     socket.emit('user_update', updates);
                 });
@@ -803,6 +816,9 @@
             const message = input.value.trim();
 
             if (!message) return;
+
+            // Clear any existing streaming message before sending new message
+            removeStreamingMessage();
 
             log('Sending query: ' + message, 'sent');
             socket.emit('query', currentConversation.id, message);
