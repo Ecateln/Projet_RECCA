@@ -5,6 +5,220 @@ let currentResponse = '';
 let sidebarRetracted = false;
 let internetResearch = false;
 
+// Fonction pour créer la popup des paramètres utilisateur
+function createUserSettingsPopup() {
+    // Créer l'overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+
+    // Créer le conteneur de la popup
+    const popup = document.createElement('div');
+    popup.className = 'popup-container';
+    popup.style.cssText = `
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        padding: 30px;
+        width: 400px;
+        max-width: 90vw;
+        position: relative;
+        transform: scale(0.8);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid #404040;
+    `;
+
+    // Créer le bouton fermer
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.cssText = `
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2em;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    `;
+
+    // Créer l'icône et le titre
+    const header = document.createElement('div');
+    header.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        gap: 15px;
+    `;
+
+    const icon = document.createElement('div');
+    icon.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px" fill="#4a9eff">
+            <path d="M222-255q63-44 125-67.5T480-346q71 0 133 23.5T738-255q44-54 69-123t25-145q0-150-105-255T480-883q-147 0-252 105T123-523q0 76 25 145t74 123Zm257-133q-59 0-99.5-40.5T339-528q0-59 40.5-99.5T479-668q59 0 99.5 40.5T619-528q0 59-40.5 99.5T479-388Z"/>
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#888">
+            <path d="M370-80q-17 0-28.5-11.5T330-120q0-17 11.5-28.5T370-160q17 0 28.5 11.5T410-120q0 17-11.5 28.5T370-80Zm220 0q-17 0-28.5-11.5T550-120q0-17 11.5-28.5T590-160q17 0 28.5 11.5T630-120q0 17-11.5 28.5T590-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H80v-80h130l38 80Z"/>
+        </svg>
+    `;
+
+    // Créer le contenu du formulaire
+    const content = document.createElement('div');
+    content.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <input type="text" placeholder="Nom d'utilisateur" style="
+                width: 100%;
+                padding: 12px 16px;
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                margin-bottom: 15px;
+                outline: none;
+                transition: border-color 0.3s ease;
+            " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
+            
+            <input type="password" placeholder="Mot de passe actuel" style="
+                width: 100%;
+                padding: 12px 16px;
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                margin-bottom: 15px;
+                outline: none;
+                transition: border-color 0.3s ease;
+            " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
+            
+            <input type="password" placeholder="Nouveau mot de passe" style="
+                width: 100%;
+                padding: 12px 16px;
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                margin-bottom: 15px;
+                outline: none;
+                transition: border-color 0.3s ease;
+            " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
+            
+            <input type="password" placeholder="Confirmation mot de passe" style="
+                width: 100%;
+                padding: 12px 16px;
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                margin-bottom: 20px;
+                outline: none;
+                transition: border-color 0.3s ease;
+            " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
+            
+            <textarea placeholder="Personnaliser votre IA (ex: Je préfère des réponses courtes)" style="
+                width: 100%;
+                padding: 12px 16px;
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                margin-bottom: 20px;
+                outline: none;
+                transition: border-color 0.3s ease;
+                resize: none;
+                height: 120px;
+                font-family: Montserrat, sans-serif;
+            " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'"></textarea>
+            
+            <button onclick="saveUserSettings()" style="
+                width: 100%;
+                padding: 12px 20px;
+                background: linear-gradient(45deg, #ff6b6b, #ffa500);
+                border: none;
+                border-radius: 50px;
+                color: white;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-family: Montserrat, sans-serif;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                Sauvegarder
+            </button>
+        </div>
+    `;
+
+    // Fonction de fermeture
+    function closePopup() {
+        popup.style.transition = 'all 0.2s ease-out';
+        overlay.style.transition = 'opacity 0.2s ease-out';
+        
+        popup.style.transform = 'scale(0.8)';
+        popup.style.opacity = '0';
+        overlay.style.opacity = '0';
+        
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+        }, 250);
+    }
+
+    // Assembler la popup
+    popup.appendChild(closeButton);
+    popup.appendChild(header);
+    popup.appendChild(content);
+    overlay.appendChild(popup);
+
+    // Ajouter les événements
+    closeButton.addEventListener('click', closePopup);
+    closeButton.addEventListener('mouseenter', () => {
+        closeButton.style.transform = 'scale(1.1)';
+    });
+    closeButton.addEventListener('mouseleave', () => {
+        closeButton.style.transform = 'scale(1)';
+    });
+
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closePopup();
+        }
+    });
+
+    // Ajouter à la page
+    document.body.appendChild(overlay);
+
+    // Déclencher l'animation
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        popup.style.transform = 'scale(1)';
+        popup.style.opacity = '1';
+    }, 10);
+}
+
 // Fonction pour basculer l'état de la sidebar
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
