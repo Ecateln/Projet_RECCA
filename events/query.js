@@ -1,5 +1,5 @@
 import { addMessage } from "../util/database.js";
-import { askAgent, loadConversationMessages } from "../util/functions.js";
+import { appendBasePromptMessage, askAgent, loadConversationMessages } from "../util/functions.js";
 import { active_queries } from "../util/globals.js";
 
 export const name = "query";
@@ -35,12 +35,15 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
         const abort_controller = new AbortController();
         socket.abort_controller = abort_controller;
 
+        const messages = socket.user_data.current_conversation.messages;
+        const old_messages_length = messages.length;
+
         const response_stream = askAgent(prompt, socket.user_data.current_conversation.messages, false, enable_web, abort_controller);
 
         for await (const token of response_stream)
             socket.emit("res", token);
 
-        for (const m of socket.user_data.current_conversation.messages.slice(-2)) {
+        for (const m of messages.slice(old_messages_length - messages.length)) {
             await addMessage(
                 socket.user_data.current_conversation.id,
                 m.role,
