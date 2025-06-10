@@ -344,6 +344,10 @@ hr {
     height: 14px;
 }
 
+.conversation-list{
+    margin-top: 10px;;
+}
+
 
 /* Message de bienvenue */
 .welcome-message {
