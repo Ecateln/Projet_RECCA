@@ -139,7 +139,7 @@ function createUserSettingsPopup() {
             
             <textarea placeholder="Personnaliser votre IA (ex: Je préfère des réponses courtes)" style="
                 width: 100%;
-                padding: 12px 16px;
+                padding: 12px 12px 12px 16px; 
                 background-color: #1a1a1a;
                 border: 1px solid #404040;
                 border-radius: 8px;
@@ -171,6 +171,29 @@ function createUserSettingsPopup() {
         </div>
     `;
 
+    // Personnalisation du style de la scrollbar
+    const customScrollbarStyle = document.createElement('style');
+    customScrollbarStyle.textContent = `
+        .popup-container textarea::-webkit-scrollbar {
+            width: 8px;
+            background: #505050;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .popup-container textarea::-webkit-scrollbar-track {
+            background: #505050;
+            border-radius: 8px;
+        }
+        .popup-container textarea {
+            scrollbar-width: thin;
+            scrollbar-color: #404040 transparent;
+            min-height: 120px;
+            margin-right: 20px;
+            
+        }
+    `;
+    document.head.appendChild(customScrollbarStyle);
+
     // Fonction de fermeture
     function closePopup() {
         popup.style.transition = 'all 0.2s ease-out';
@@ -191,6 +214,7 @@ function createUserSettingsPopup() {
     popup.appendChild(closeButton);
     popup.appendChild(header);
     popup.appendChild(content);
+    popup.appendChild(customScrollbarStyle);
     overlay.appendChild(popup);
 
     // Ajouter les événements
@@ -292,6 +316,16 @@ function scrollToBottom() {
     }
 }
 
+// Fonction pour ajouter un message du bot
+function addBotMessage(markdownText) {
+    const messagesContainer = document.querySelector('.messages-container');
+    const botMessageDiv = document.createElement('div');
+    botMessageDiv.className = 'message bot-message';
+    // Convertir le markdown en HTML
+    botMessageDiv.innerHTML = `<p>${marked.parse(markdownText)}</p>`;
+    messagesContainer.appendChild(botMessageDiv);
+}
+
 // Mise à jour de l'interface
 function updateUI() {
     console.log('UI updated');
@@ -314,5 +348,6 @@ window.addEventListener('load', function() {
     restoreSidebarState();
     updateUI();
     scrollToBottom();
+    
 });
 
