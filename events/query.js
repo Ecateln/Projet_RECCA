@@ -44,6 +44,7 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
             socket.emit("res", token);
 
         for (const m of messages.slice(old_messages_length - messages.length)) {
+            if (m.id == 0) continue; // Skip base prompt message
             await addMessage(
                 socket.user_data.current_conversation.id,
                 m.role,

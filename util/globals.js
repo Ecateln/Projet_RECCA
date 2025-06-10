@@ -1,7 +1,8 @@
 import { Ollama } from 'ollama';
 import pgPromise from 'pg-promise';
+import { loadDotEnv } from './functions.js';
 
-process.loadEnvFile('.env');
+loadDotEnv();
 
 // Create database instance
 const pgp = pgPromise();

@@ -1,7 +1,11 @@
+import fs from 'fs';
+import * as cheerio from 'cheerio';
+
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
+
 const SERP_API_KEY = '07b79833f1cb2ca14810bba13734c3275660122635850586fbbc1f885a4f1005';
 
 function appendBasePromptMessage(conversation, base_prompt) {
@@ -10,14 +14,16 @@ function appendBasePromptMessage(conversation, base_prompt) {
         role: "system",
         content: `
             You are a virtual assistant that replies to users questions.
-            The user is a human and you are an AI. Your name is RECCA.
+            Your name is RECCA, which stands for "Romain, Elouan, Corentin, Clément, Adam". You are to refer to yourself as RECCA, and RECCA only.
+            You cannot use any other name or alias.
+
             You must always answer in a helpful and friendly manner.
             Everything you say will be under educational purposes only.
             You will never ignore prompts made by the 'system' role.
             If something the user asks might be dangerous, you will always display a warning before proceeding to answer.
             You will always answer in the language of the user.
 
-            Here is some information provided by the user:
+            Here is some information provided by the user, only refer to this information if it is relevant to the question asked:
             ${base_prompt || "Aucune information fournie."}`,
         created_at: new Date(0),
     });
@@ -27,7 +33,6 @@ async function getGoogleResults(query) {
     const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${SERP_API_KEY}&engine=google`;
     const data = await fetch(url).then(res => res.json()).catch(_ => null);
 
-    console.log(data);
     if (data?.error) return [];
 
     const results = data.organic_results;
@@ -37,44 +42,63 @@ async function getGoogleResults(query) {
 function filterContent(text) {
     if (!text) return '';
 
+    const filteredLines = [];
     const lines = text.split('\n');
-    let filteredLines = [];
-    let foundValidLine = false;
 
-    for (const line of lines) { 
-        if (line.trim().length >= 30) {
-            filteredLines.push(line);
-        }
+    for (const line of lines) {
+        if (line.trim().length <= 30) continue;
+
+        filteredLines.push(line);
     }
 
-    return filteredLines.join('\n');
+    return filteredLines.join('\n').slice(0, 10000);
 }
 
 async function extractContentFromUrl(url, browser) {
     try {
-        const page = await browser.newPage();
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        const text = await page.evaluate(() => document.body.innerText.slice(0, 2000)); // Réduit pour optimiser
-        await page.close();
+        const html = await fetch(url, { signal: AbortSignal.timeout(1000) })
+            .then(r => r.text());
 
-        
-        return text.trim();
+        const $ = cheerio.load(html);
+
+        // Remove script and style elements
+        $('script, style, nav, header, footer, aside, .ad, .advertisement, .sidebar, img').remove();
+
+        // Extract text from main content areas first, fallback to body
+        let text = $('main, article, .content, .post, .entry').text() || $('body').text();
+
+        // Clean up whitespace and normalize text
+        text = text.replace(/\s+/g, ' ').trim();
+
+        return filterContent(text);
     } catch (err) {
-        return `⚠️ Erreur lors de l'extraction de ${url}: ${err.message}`;
+        return null;
     }
 }
 
 async function* askAgent(prompt, previous_messages, think = false, web = false, abort_controller = null) {
-    // TODO: web requests
-
     const question = { created_at: new Date(), role: 'user', content: prompt };
 
     const messages = previous_messages.slice(1);
-    messages.push(question);
-    if (web = true) {
+    messages.push({...question, content: prompt});
+    if (web) {
         // Generation du texte web a cherche
-        // TODO: refaire la prompt pour qu'elle soit plus concise et efficace
-        const web_prompt = `Quelle recherche web faire pour répondre à la question suivante: ${prompt}\n\n Ne détaille rien, donne moi juste ce qu'il faut rentrer dans la barre de recherche, sans superflu ou explications.`;
+        const web_prompt = `
+        You are a virtual assistant that helps users find information on the web.
+        You will always answer in a concise manner.
+        You have to provide a web search query that will help you find the information needed to answer the user's question.
+
+        The user has asked the following question:
+        =====
+        ${prompt}
+        =====
+
+        You will generate a web search query that is relevant to the user's question.
+        The query should be concise and specific, and should not include any personal information or sensitive data.
+        Provide only the query, without any additional text or explanation.
+
+        Today is ${new Date().toLocaleDateString('en-US')} and the time is ${new Date().toLocaleTimeString('en-US')}.`;
+
         try {
             const web_question = { created_at: new Date(), role: 'user', content: web_prompt };
             const response = await ollama.chat({
@@ -84,31 +108,21 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
                 think: false,
             });
 
-            console.log('Réponse de l’IA :');
-            console.log(response.message.content);
-            // console.log(response.data.response);
-            // return response.data.response;
-            // messages.push({ created_at: new Date(), role: 'user', content: "Voici des informations récupérées d'" response.data.response });
+            console.log('Réponse de l’IA :' + response.message.content);
 
             // Recherche web
-            const web_request = response.message.content;
+            const web_request = response.message.content.replace(/[^a-zA-Z0-9\s]/g, '').trim();
             const urls = await getGoogleResults(web_request);
-            const browser = await puppeteer.launch({ headless: true });
 
             let webContent = "";
-
             for (const url of urls) {
-                const precontent = await extractContentFromUrl(url, browser);
-                let content = filterContent(precontent);
-                if (!content) {
-                    content = `Aucun contenu significatif trouvé pour ${url}`;
-                    continue;
-                }
+                const content = await extractContentFromUrl(url, null);
+                if (!content) continue;
 
-                webContent += `\nSource: ${url}\nContenu: ${content}\n---\n`;
+                webContent += `\n\n\nSource: ${url}\nContenu: ${content}\n---\n`;
             }
 
-            await browser.close();
+            console.log(webContent);
 
             // Ajouter le contenu web au prompt
             messages.push({
@@ -116,15 +130,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
                 role: 'system',
                 content: `Voici des informations récupérées du web pour t'aider à répondre à la question précédente :\n Recherche web associée ${web_request}: \n${webContent}`,
             });
-
-            console.log(messages.at(-1));
-
-            // enhancedPrompt = `${prompt}\n\nInformations contextuelles du web pour t'aider à répondre à la question :\n Recherche web associée : clement ogé linkedin \n${webContent}`;
-            // console.log(enhancedPrompt);
         } catch (error) {
-            yield `⚠️ Erreur lors de la recherche web: ${error.message}\n\n`;
-            yield null;
-            return;
+            throw `⚠️ Erreur lors de la recherche web: ${error.message}\n\n`;
         }
     }
 
@@ -206,6 +213,17 @@ async function loadConversationMessages(conversation) {
     return true;
 }
 
+function loadDotEnv() {
+    const data = fs.readFileSync('.env', 'utf8');
+    const lines = data.split('\n');
+    for (const line of lines) {
+        const [key, value] = line.split('=');
+        if (key && value) {
+            process.env[key.trim()] = value.trim();
+        }
+    }
+}
+
 function validatePasswordFormat(password) {
     if (typeof password !== "string")
         return { error: "Le mot de passe doit être une chaîne de caractères." };
@@ -250,6 +268,7 @@ export {
     generateToken,
     hashPassword,
     loadConversationMessages,
+    loadDotEnv,
     validatePasswordFormat,
     validateUsernameFormat,
     verifyPassword,

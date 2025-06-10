@@ -821,7 +821,7 @@
             removeStreamingMessage();
 
             log('Sending query: ' + message, 'sent');
-            socket.emit('query', currentConversation.id, message);
+            socket.emit('query', currentConversation.id, message, false);
 
             addMessage('user', message);
             input.value = '';
