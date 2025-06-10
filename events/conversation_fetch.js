@@ -21,5 +21,6 @@ export async function run(io, socket, conversation_id) {
     socket.user_data.current_conversation = conversation;
     appendBasePromptMessage(conversation, socket.user_data.base_prompt);
 
-    socket.emit("conversation", socket.user_data.current_conversation.filter(m => m.role !== "system"));
+    const messages = conversation.messages.filter(m => m.role !== "system");
+    socket.emit("conversation", { ...socket.user_data.current_conversation, messages });
 }
