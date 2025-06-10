@@ -3,13 +3,38 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* Désactiver le carré bleu sur mobile */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Désactiver spécifiquement pour les boutons et éléments interactifs */
+button, svg, a, [onclick] {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    outline: none !important;
+    -webkit-focus-ring-color: transparent !important;
+}
+
+/* Pour les input, garder la sélection de texte mais supprimer le highlight */
+input, textarea {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 body {
     font-family: 'Montserrat';
     background-color: #1a1a1a;
     color: #e3e3e3;
-    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -89,6 +114,7 @@ body {
 .internet-toggle:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39));
 }
 
 .internet-toggle-left {
@@ -145,18 +171,26 @@ body {
     color: white;
     font-weight: 500;
     font-size: 15px;
+    transform: scale(1);
     transition: all 0.3s ease;
 }
 
 .new-chat-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39));
+}
+
+.new-chat-btn:active {
+    transform: scale(0.98); 
+    transition: all 0.1s ease; 
 }
 
 .new-chat-btn svg {
     margin-right: 8px;
     fill: white;
 }
+        
 
 /* Séparateur */
 hr {
@@ -234,7 +268,7 @@ hr {
     display: flex;
     flex-direction: column;
     background-color: #1a1a1a;
-    height: 100vh;
+    height: 100dvh;
     min-width: 0;
 }
 
@@ -259,10 +293,17 @@ hr {
 }
 
 .header-left img {
-    height: 32px;
+    height: 100px;
     width: auto;
     object-fit: contain;
     margin-bottom: 10px;
+}
+
+.header-center img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 0;
 }
 
 .header-right {
@@ -276,11 +317,15 @@ hr {
     transition: opacity 0.2s ease;
     height: 40px;
     width: 40px;
+    transform: scale(1);
+    transition: all 0.3s ease;
 }
 
 .header-right svg:hover {
-    opacity: 0.8;
+    opacity: 0.9;
+    transform: scale(1.05);
 }
+
 
 /* Conteneur des messages */
 .messages-container {
@@ -427,39 +472,185 @@ hr {
     background-color: #555;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 250px;
-        min-width: 250px;
-    }
-    
-    .messages-container {
-        padding: 20px;
-    }
-    
-    .input-area {
-        padding: 15px 20px;
-    }
-    
-    .message {
-        max-width: 90%;
-    }
-
+/* Masquer les éléments mobiles par défaut */
+.mobile-only {
+    display: none !important;
 }
 
+/* Header desktop (par défaut) */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 30px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+}
+
+.desktop-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.desktop-header img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.desktop-header h1 {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-right {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.header-right:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* RESPONSIVE */
 @media (max-width: 600px) {
-    .sidebar {
-        width: 200px;
-        min-width: 200px;
+    /* Afficher les éléments mobiles */
+    .mobile-only {
+        display: flex !important;
     }
     
-    .messages-container {
+    /* Masquer les éléments desktop */
+    .desktop-header {
+        display: none !important;
+    }
+    
+    .container {
+        position: relative;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        min-width: 280px;
+        height: 100dvh;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        transition: left 0.3s ease;
+    }
+    
+    .sidebar.mobile-open {
+        left: 0;
+    }
+    
+    .chat-area {
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .chat-header {
+        padding: 15px 20px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .header-left {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .header-center {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .header-center img {
+        height: 28px;
+        width: auto;
+        object-fit: contain;
+        margin-bottom: 8px;
+    }
+    
+    .header-center h1 {
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .header-right {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .mobile-menu-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .mobile-menu-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .mobile-menu-btn svg {
+        fill: #e3e3e3;
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* Overlay pour fermer la sidebar en cliquant à côté */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100dvh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+      .messages-container {
         padding: 15px;
+        flex: none; 
+        overflow-y: auto;
+        height: calc(100dvh - 147.5px);
+        padding-bottom: 15px;
     }
     
     .input-area {
         padding: 15px;
+        background-color: #1a1a1a;
+        border-top: 1px solid #333;
+        height: 80px; /* Hauteur fixe pour la zone d'input */
     }
     
     .message {
@@ -470,5 +661,4 @@ hr {
     .chat-header h1 {
         font-size: 20px;
     }
-
 }

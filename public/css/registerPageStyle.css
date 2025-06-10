@@ -52,7 +52,7 @@ body {
 
 .container {
     display: flex;
-    height: 100vh;
+    height: 100dvh;
     font-family: Montserrat;
     letter-spacing: 1px;
 }

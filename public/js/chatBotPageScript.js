@@ -59,6 +59,9 @@ function createUserSettingsPopup() {
         align-items: center;
         justify-content: center;
         transition: transform 0.2s ease;
+        will-change: transform; 
+        backface-visibility: hidden; 
+        -webkit-font-smoothing: antialiased; 
     `;
 
     // Créer l'icône et le titre
@@ -73,10 +76,10 @@ function createUserSettingsPopup() {
 
     const icon = document.createElement('div');
     icon.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px" fill="#4a9eff">
+        <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="http://www.w3.org/2000/svg" width="40px" fill="#4a9eff">
             <path d="M222-255q63-44 125-67.5T480-346q71 0 133 23.5T738-255q44-54 69-123t25-145q0-150-105-255T480-883q-147 0-252 105T123-523q0 76 25 145t74 123Zm257-133q-59 0-99.5-40.5T339-528q0-59 40.5-99.5T479-668q59 0 99.5 40.5T619-528q0 59-40.5 99.5T479-388Z"/>
         </svg>
-        <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#888">
+        <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="http://www.w3.org/2000/svg" width="30px" fill="#888">
             <path d="M370-80q-17 0-28.5-11.5T330-120q0-17 11.5-28.5T370-160q17 0 28.5 11.5T410-120q0 17-11.5 28.5T370-80Zm220 0q-17 0-28.5-11.5T550-120q0-17 11.5-28.5T590-160q17 0 28.5 11.5T630-120q0 17-11.5 28.5T590-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-482q-11 20-29.5 31T622-440H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H80v-80h130l38 80Z"/>
         </svg>
     `;
@@ -85,7 +88,7 @@ function createUserSettingsPopup() {
     const content = document.createElement('div');
     content.innerHTML = `
         <div style="margin-bottom: 20px;">
-            <input type="text" placeholder="Nom d'utilisateur" style="
+            <input type="text" placeholder="Nom d'utilisateur" minlength="2" maxlength="32" style="
                 width: 100%;
                 padding: 12px 16px;
                 background-color: #1a1a1a;
@@ -93,12 +96,13 @@ function createUserSettingsPopup() {
                 border-radius: 8px;
                 color: white;
                 font-size: 14px;
+                font-family: Montserrat;
                 margin-bottom: 15px;
                 outline: none;
                 transition: border-color 0.3s ease;
             " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
             
-            <input type="password" placeholder="Mot de passe actuel" style="
+            <input type="password" placeholder="Mot de passe actuel" minlength="12" maxlength="64" style="
                 width: 100%;
                 padding: 12px 16px;
                 background-color: #1a1a1a;
@@ -106,12 +110,13 @@ function createUserSettingsPopup() {
                 border-radius: 8px;
                 color: white;
                 font-size: 14px;
+                font-family: Montserrat;
                 margin-bottom: 15px;
                 outline: none;
                 transition: border-color 0.3s ease;
             " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
             
-            <input type="password" placeholder="Nouveau mot de passe" style="
+            <input type="password" placeholder="Nouveau mot de passe" minlength="12" maxlength="64" style="
                 width: 100%;
                 padding: 12px 16px;
                 background-color: #1a1a1a;
@@ -119,12 +124,13 @@ function createUserSettingsPopup() {
                 border-radius: 8px;
                 color: white;
                 font-size: 14px;
+                font-family: Montserrat;
                 margin-bottom: 15px;
                 outline: none;
                 transition: border-color 0.3s ease;
             " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
             
-            <input type="password" placeholder="Confirmation mot de passe" style="
+            <input type="password" placeholder="Confirmation mot de passe" minlength="12" maxlength="64" style="
                 width: 100%;
                 padding: 12px 16px;
                 background-color: #1a1a1a;
@@ -132,12 +138,13 @@ function createUserSettingsPopup() {
                 border-radius: 8px;
                 color: white;
                 font-size: 14px;
+                font-family: Montserrat;
                 margin-bottom: 20px;
                 outline: none;
                 transition: border-color 0.3s ease;
             " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'">
             
-            <textarea placeholder="Personnaliser votre IA (ex: Je préfère des réponses courtes)" style="
+            <textarea placeholder="Personnaliser votre IA (ex: Je préfère des réponses courtes)" maxlength="1000" style="
                 width: 100%;
                 padding: 12px 12px 12px 16px; 
                 background-color: #1a1a1a;
@@ -150,13 +157,13 @@ function createUserSettingsPopup() {
                 transition: border-color 0.3s ease;
                 resize: none;
                 height: 120px;
-                font-family: Montserrat, sans-serif;
+                font-family: Montserrat;
             " onfocus="this.style.borderColor='#4a9eff'" onblur="this.style.borderColor='#404040'"></textarea>
             
-            <button onclick="saveUserSettings()" style="
+            <button class="animation_button" onclick="saveUserSettings()" style="
                 width: 100%;
                 padding: 12px 20px;
-                background: linear-gradient(45deg, #ff6b6b, #ffa500);
+                background: linear-gradient(135deg, #ff6b6b, #ffa500);
                 border: none;
                 border-radius: 50px;
                 color: white;
@@ -164,8 +171,8 @@ function createUserSettingsPopup() {
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.3s ease;
-                font-family: Montserrat, sans-serif;
-            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                font-family: Montserrat;
+            ">
                 Sauvegarder
             </button>
         </div>
@@ -188,8 +195,31 @@ function createUserSettingsPopup() {
             scrollbar-width: thin;
             scrollbar-color: #404040 transparent;
             min-height: 120px;
-            margin-right: 20px;
-            
+        }
+        .popup-container input:focus,
+        .popup-container textarea:focus {
+            border-color: #FF8A32 !important;
+            box-shadow: 0 0 0 2px #ffa50033;
+        }
+
+        .animation_button {
+            transition: all 0.3s ease;
+            transform: scale(1);
+            letter-spacing: 1px;
+            will-change: transform; 
+            backface-visibility: hidden; 
+            -webkit-font-smoothing: antialiased; 
+        }  
+
+        .animation_button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
+            background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39)) !important;
+        }
+
+        .animation_button:active {
+            transform: scale(0.98) !important; 
+            transition: all 0.1s ease !important; 
         }
     `;
     document.head.appendChild(customScrollbarStyle);
@@ -246,8 +276,14 @@ function createUserSettingsPopup() {
 // Fonction pour basculer l'état de la sidebar
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    
-    sidebarRetracted = !sidebarRetracted;
+
+    if( sidebar.classList.contains('mobile-open')) {
+        // Si la sidebar est ouverte en mode mobile, on la ferme
+        closeMobileSidebar();
+        return;
+    }
+
+     sidebarRetracted = !sidebarRetracted;
     
     if (sidebarRetracted) {
         sidebar.classList.add('retracted');
@@ -342,6 +378,47 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Fonction pour basculer la sidebar en mode mobile
+function openMobileSidebar() {
+    sidebarRetracted = true;
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+}
+
+function closeMobileSidebar() {
+
+    sidebarRetracted = false;
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+}
+
+// Afficher le bouton menu sur mobile
+window.addEventListener('resize', function() {
+    const mobileBtn = document.querySelector('.mobile-menu-btn');
+    if (window.innerWidth <= 600) {
+        mobileBtn.style.display = 'flex';
+    } else {
+        mobileBtn.style.display = 'none';
+        closeMobileSidebar();
+    }
+});
+
+// Initialiser l'affichage au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileBtn = document.querySelector('.mobile-menu-btn');
+    if (window.innerWidth <= 600) {
+        mobileBtn.style.display = 'flex';
+    }
+});
 
 // Initialize when page loads
 window.addEventListener('load', function() {
