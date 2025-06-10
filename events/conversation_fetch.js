@@ -1,4 +1,4 @@
-import { loadConversationMessages } from "../util/functions.js";
+import { appendBasePromptMessage, loadConversationMessages } from "../util/functions.js";
 
 export const name = "conversation_fetch";
 export const cooldown = 250;
@@ -18,6 +18,8 @@ export async function run(io, socket, conversation_id) {
         return socket.emit('error', { error: 'Erreur lors du chargement des messages de la conversation.' });
     }
 
-    socket.user_data.current_conversation = socket.user_data.conversations[conv_i];
-    socket.emit("conversation", socket.user_data.current_conversation);
+    socket.user_data.current_conversation = conversation;
+    appendBasePromptMessage(conversation, socket.user_data.base_prompt);
+
+    socket.emit("conversation", socket.user_data.current_conversation.filter(m => m.role !== "system"));
 }

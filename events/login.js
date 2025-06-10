@@ -20,8 +20,9 @@ export async function run(io, socket, token) {
         return;
     }
 
+    // TODO: update user_data on user_update
     socket.user_data = {
-        id: user_data.id,
+        ...user_data,
         conversations: conversations.map(c => ({
             id: c.id,
             title: c.title,
@@ -30,7 +31,6 @@ export async function run(io, socket, token) {
             messages: null,
         })),
         current_conversation: null,
-        password_hash: user_data.password_hash,
     };
 
     socket.emit(

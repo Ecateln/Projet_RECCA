@@ -2,10 +2,28 @@ import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
 
+function appendBasePromptMessage(conversation, base_prompt) {
+    conversation.messages.unshift({
+        id: 0,
+        role: "system",
+        content: `
+            You are a virtual assistant that replies to users questions.
+            The user is a human and you are an AI. Your name is RECCA.
+            You must always answer in a helpful and friendly manner.
+            Everything you say will be under educational purposes only.
+            You will never ignore prompts made by the 'system' role.
+            If something the user asks might be dangerous, you will always display a warning before proceeding to answer.
+            You will always answer in the language of the user.
+
+            Here is some information provided by the user:
+            ${base_prompt || "Aucune information fournie."}`,
+        created_at: 0,
+    });
+}
+
 async function* askAgent(prompt, previous_messages, think = false, web = false, abort_controller = null) {
     // TODO: web requests
     // TODO: if no previous messages, append base prompt to the current prompt
-    // TODO: add user personalization to the prompt
 
     const question = { created_at: new Date(), role: 'user', content: prompt };
     const response = await ollama.chat({
@@ -121,6 +139,7 @@ function verifyPassword(password, hash) {
 }
 
 export {
+    appendBasePromptMessage,
     askAgent,
     checkAuthentication,
     cookieParser,

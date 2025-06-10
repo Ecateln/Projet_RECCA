@@ -25,6 +25,7 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
             return socket.emit('error', { error: 'Erreur lors du chargement des messages de la conversation.' });
         }
 
+        appendBasePromptMessage(conversation, socket.user_data.base_prompt);
         socket.user_data.current_conversation = conversation;
     }
 

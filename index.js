@@ -33,7 +33,7 @@ app.use('/public', express.static(path.join('public')));
 const socket_events = await Promise.all(
     readdirSync(path.join(process.cwd(), 'events'))
         .filter(filename => filename.endsWith('.js'))
-        .map(f => import(path.join(process.cwd(), 'events', f)))
+        .map(f => import("file://" + path.join(process.cwd(), 'events', f)))
 );
 
 // Setup socket events cooldowns
