@@ -29,21 +29,51 @@ const socket_server = new Server(server);
 app.use(cookieParser, checkAuthentication, express.json());
 app.use('/public', express.static(path.join('public')));
 
+// List all socket events
 const socket_events = await Promise.all(
     readdirSync(path.join(process.cwd(), 'events'))
         .filter(filename => filename.endsWith('.js'))
         .map(f => import(path.join(process.cwd(), 'events', f)))
 );
 
+// Setup socket events cooldowns
+const cooldowns = new Map();
+socket_events.forEach(event => {
+    if (event.cooldown > 0) {
+        cooldowns.set(event.name, new Map());
+    }
+});
+
 socket_server.on('connection', (socket) => {
     socket.user_data = null;
 
     socket_events.forEach(event => {
-        // TODO: cooldown handler
+        const event_cooldown = cooldowns.get(event.name);
+
         socket.on(
             event.name,
             (...args) => {
+                // Authentication handler
                 if (event.requires_login && !socket.user_data) return;
+
+                // Cooldown handler
+                if (event_cooldown) {
+                    const user_id = socket.user_data?.id ?? socket.id;
+
+                    const now = Date.now();
+                    const until = event_cooldown.get(user_id) ?? 0;
+
+                    if (now <= until) {
+                        const remaining = Math.ceil((until - now) / 1000);
+                        return socket.emit('error', {
+                            error: `Actions trop rapides. Veuillez attendre ${remaining} secondes avant de réessayer.`,
+                        });
+                    }
+
+                    event_cooldown.set(user_id, now + event.cooldown);
+                }
+
+                // Run the event
                 event.run(socket_server, socket, ...args);
             },
         );
