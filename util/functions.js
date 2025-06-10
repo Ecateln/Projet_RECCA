@@ -1,6 +1,8 @@
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
+import puppeteer from 'puppeteer';
+const SERP_API_KEY = '07b79833f1cb2ca14810bba13734c3275660122635850586fbbc1f885a4f1005';
 
 function appendBasePromptMessage(conversation, base_prompt) {
     conversation.messages.unshift({
@@ -17,21 +19,123 @@ function appendBasePromptMessage(conversation, base_prompt) {
 
             Here is some information provided by the user:
             ${base_prompt || "Aucune information fournie."}`,
-        created_at: 0,
+        created_at: new Date(0),
     });
+}
+
+async function getGoogleResults(query) {
+    const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${SERP_API_KEY}&engine=google`;
+    const data = await fetch(url).then(res => res.json()).catch(_ => null);
+
+    console.log(data);
+    if (data?.error) return [];
+
+    const results = data.organic_results;
+    return results.slice(0, 5)?.map(r => r.link); // Limité à 5 résultats pour éviter la surcharge
+}
+
+function filterContent(text) {
+    if (!text) return '';
+
+    const lines = text.split('\n');
+    let filteredLines = [];
+    let foundValidLine = false;
+
+    for (const line of lines) { 
+        if (line.trim().length >= 30) {
+            filteredLines.push(line);
+        }
+    }
+
+    return filteredLines.join('\n');
+}
+
+async function extractContentFromUrl(url, browser) {
+    try {
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        const text = await page.evaluate(() => document.body.innerText.slice(0, 2000)); // Réduit pour optimiser
+        await page.close();
+
+        
+        return text.trim();
+    } catch (err) {
+        return `⚠️ Erreur lors de l'extraction de ${url}: ${err.message}`;
+    }
 }
 
 async function* askAgent(prompt, previous_messages, think = false, web = false, abort_controller = null) {
     // TODO: web requests
-    // TODO: if no previous messages, append base prompt to the current prompt
 
     const question = { created_at: new Date(), role: 'user', content: prompt };
+
+    const messages = previous_messages.slice(1);
+    messages.push(question);
+    if (web = true) {
+        // Generation du texte web a cherche
+        // TODO: refaire la prompt pour qu'elle soit plus concise et efficace
+        const web_prompt = `Quelle recherche web faire pour répondre à la question suivante: ${prompt}\n\n Ne détaille rien, donne moi juste ce qu'il faut rentrer dans la barre de recherche, sans superflu ou explications.`;
+        try {
+            const web_question = { created_at: new Date(), role: 'user', content: web_prompt };
+            const response = await ollama.chat({
+                model: 'gemma3:4b',
+                messages: [web_question],
+                stream: false,
+                think: false,
+            });
+
+            console.log('Réponse de l’IA :');
+            console.log(response.message.content);
+            // console.log(response.data.response);
+            // return response.data.response;
+            // messages.push({ created_at: new Date(), role: 'user', content: "Voici des informations récupérées d'" response.data.response });
+
+            // Recherche web
+            const web_request = response.message.content;
+            const urls = await getGoogleResults(web_request);
+            const browser = await puppeteer.launch({ headless: true });
+
+            let webContent = "";
+
+            for (const url of urls) {
+                const precontent = await extractContentFromUrl(url, browser);
+                let content = filterContent(precontent);
+                if (!content) {
+                    content = `Aucun contenu significatif trouvé pour ${url}`;
+                    continue;
+                }
+
+                webContent += `\nSource: ${url}\nContenu: ${content}\n---\n`;
+            }
+
+            await browser.close();
+
+            // Ajouter le contenu web au prompt
+            messages.push({
+                created_at: new Date(),
+                role: 'system',
+                content: `Voici des informations récupérées du web pour t'aider à répondre à la question précédente :\n Recherche web associée ${web_request}: \n${webContent}`,
+            });
+
+            console.log(messages.at(-1));
+
+            // enhancedPrompt = `${prompt}\n\nInformations contextuelles du web pour t'aider à répondre à la question :\n Recherche web associée : clement ogé linkedin \n${webContent}`;
+            // console.log(enhancedPrompt);
+        } catch (error) {
+            yield `⚠️ Erreur lors de la recherche web: ${error.message}\n\n`;
+            yield null;
+            return;
+        }
+    }
+
+
     const response = await ollama.chat({
         // model: 'qwen3:4b',
-        model: 'gemma3:4b',
         // model: 'mistral:7b',
-        messages: previous_messages.concat(question),
+
+        model: 'gemma3:4b',
         stream: true,
+        messages,
         think,
     });
 
