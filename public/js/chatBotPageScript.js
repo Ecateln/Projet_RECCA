@@ -398,7 +398,7 @@ function removeWelcomeMessage() {
         messagesContainer.classList.remove('has-welcome');
     }
     
-    // Marquer la conversation comme n'ayant plus le message de bienvenue
+    // Marquer définitivement la conversation comme n'ayant plus le message de bienvenue
     const activeConversation = conversations.find(conv => conv.id === currentConversation);
     if (activeConversation) {
         activeConversation.hasWelcomeMessage = false;
@@ -709,10 +709,18 @@ function loadConversationMessages(conversation) {
     const messagesContainer = document.querySelector('.messages-container');
     messagesContainer.innerHTML = '';
     
-    // Si la conversation a le message de bienvenue et aucun message réel
+    // Supprimer la classe de centrage par défaut
+    messagesContainer.classList.remove('has-welcome');
+    
+    // Afficher le message de bienvenue SEULEMENT si la conversation est vraiment vide
     if (conversation.hasWelcomeMessage && conversation.messages.length === 0) {
         showWelcomeMessage();
     } else {
+        // Si il y a des messages, on ne montre plus jamais le message de bienvenue
+        if (conversation.messages.length > 0) {
+            conversation.hasWelcomeMessage = false;
+        }
+        
         // Charger tous les messages de la conversation
         conversation.messages.forEach(message => {
             addMessageToUI(message.content, message.type, false);
@@ -727,6 +735,8 @@ function loadConversationMessages(conversation) {
 function clearMessagesContainer() {
     const messagesContainer = document.querySelector('.messages-container');
     messagesContainer.innerHTML = '';
+    // Supprimer la classe de centrage
+    messagesContainer.classList.remove('has-welcome');
 }
 
 
