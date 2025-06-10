@@ -4,6 +4,8 @@ let isAuthenticated = false;
 let currentResponse = '';
 let sidebarRetracted = false;
 let internetResearch = false;
+let conversations = [];
+let conversationCounter = 1;
 
 // Fonction pour créer la popup des paramètres utilisateur
 function createUserSettingsPopup() {
@@ -333,6 +335,114 @@ function updateUI() {
     scrollToBottom();
 }
 
+// Fonction pour créer une nouvelle conversation
+function createNewConversation() {
+    const newConversation = {
+        id: Date.now(), // ID unique basé sur le timestamp
+        title: `Conversation ${conversationCounter}`,
+        messages: [],
+        isActive: false
+    };
+    
+    // Désactiver toutes les autres conversations
+    conversations.forEach(conv => conv.isActive = false);
+    
+    // Activer la nouvelle conversation
+    newConversation.isActive = true;
+    
+    // Ajouter en début de liste
+    conversations.unshift(newConversation);
+    conversationCounter++;
+    
+    // Mettre à jour l'affichage
+    updateConversationsList();
+    clearMessagesContainer();
+    
+    // Mettre à jour la conversation courante
+    currentConversation = newConversation.id;
+    
+    console.log('Nouvelle conversation créée:', newConversation);
+}
+
+// Fonction pour mettre à jour la liste des conversations
+function updateConversationsList() {
+    const conversationList = document.getElementById('conversation-list');
+    
+    // Vider la liste actuelle
+    conversationList.innerHTML = '';
+    
+    // Ajouter chaque conversation
+    conversations.forEach(conversation => {
+        const conversationItem = document.createElement('button');
+        conversationItem.className = `conversation-item ${conversation.isActive ? 'active' : ''}`;
+        conversationItem.textContent = conversation.title;
+        conversationItem.onclick = () => selectConversation(conversation.id);
+        
+        conversationList.appendChild(conversationItem);
+    });
+}
+
+
+// Fonction pour sélectionner une conversation
+function selectConversation(conversationId) {
+    // Désactiver toutes les conversations
+    conversations.forEach(conv => conv.isActive = false);
+    
+    // Activer la conversation sélectionnée
+    const selectedConversation = conversations.find(conv => conv.id === conversationId);
+    if (selectedConversation) {
+        selectedConversation.isActive = true;
+        currentConversation = conversationId;
+        
+        // Mettre à jour l'affichage
+        updateConversationsList();
+        loadConversationMessages(selectedConversation);
+    }
+}
+
+// Fonction pour charger les messages d'une conversation
+function loadConversationMessages(conversation) {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.innerHTML = '';
+    
+    // Charger tous les messages de la conversation
+    conversation.messages.forEach(message => {
+        addMessageToUI(message.content, message.type, false);
+    });
+    
+    scrollToBottom();
+}
+
+
+// Fonction pour vider le conteneur de messages
+function clearMessagesContainer() {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.innerHTML = '';
+}
+
+
+// Modifier la fonction addMessageToUI pour sauvegarder dans la conversation active
+function addMessageToUI(message, type, saveToConversation = true) {
+    const messagesContainer = document.querySelector('.messages-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    messageDiv.innerHTML = `<p>${message}</p>`;
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Sauvegarder le message dans la conversation active
+    if (saveToConversation && currentConversation) {
+        const activeConversation = conversations.find(conv => conv.id === currentConversation);
+        if (activeConversation) {
+            activeConversation.messages.push({
+                content: message,
+                type: type,
+                timestamp: new Date()
+            });
+        }
+    }
+}
+
 // Add CSS for blinking cursor
 const style = document.createElement('style');
 style.textContent = `
@@ -348,6 +458,9 @@ window.addEventListener('load', function() {
     restoreSidebarState();
     updateUI();
     scrollToBottom();
+
+    // Créer une première conversation par défaut
+    createNewConversation();
     
 });
 
