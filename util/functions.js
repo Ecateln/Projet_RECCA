@@ -2,11 +2,10 @@ import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
 
-async function* askAgent(prompt, previous_messages, think = false, web = false) {
+async function* askAgent(prompt, previous_messages, think = false, web = false, abort_controller = null) {
     // TODO: web requests
     // TODO: if no previous messages, append base prompt to the current prompt
     // TODO: add user personalization to the prompt
-    // TODO: add the ability to cancel the query
 
     const question = { created_at: new Date(), role: 'user', content: prompt };
     const response = await ollama.chat({
@@ -23,6 +22,11 @@ async function* askAgent(prompt, previous_messages, think = false, web = false) 
         if (chunk.message.content) {
             yield chunk.message.content;
             full_response += chunk.message.content;
+        }
+
+        if (abort_controller?.signal?.aborted) {
+            response.abort();
+            break;
         }
     }
 

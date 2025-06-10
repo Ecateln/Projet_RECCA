@@ -31,12 +31,15 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
     active_queries.add(socket.user_data.id);
 
     try {
-        const response_stream = askAgent(prompt, socket.user_data.current_conversation.messages, false, enable_web);
+        const abort_controller = new AbortController();
+        socket.abort_controller = abort_controller;
+
+        const response_stream = askAgent(prompt, socket.user_data.current_conversation.messages, false, enable_web, abort_controller);
+
         for await (const token of response_stream)
             socket.emit("res", token);
 
         for (const m of socket.user_data.current_conversation.messages.slice(-2)) {
-            console.log(m);
             await addMessage(
                 socket.user_data.current_conversation.id,
                 m.role,
@@ -49,6 +52,7 @@ export async function run(io, socket, conversation_id, prompt, enable_web = fals
         socket.emit("error", { error: "Une erreur est survenue lors de la réponse." });
     } finally {
         active_queries.delete(socket.user_data.id);
+        socket.abort_controller = null;
         socket.emit("res", null);
     }
 }

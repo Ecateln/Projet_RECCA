@@ -80,7 +80,8 @@ socket_server.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        // TODO: gracefully handle disconnect
+        // Abort any ongoing query
+        socket.abort_controller?.abort();
 
         // console.log('A user disconnected');
     });
