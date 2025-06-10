@@ -4,6 +4,8 @@ let isAuthenticated = false;
 let currentResponse = '';
 let sidebarRetracted = false;
 let internetResearch = false;
+let conversations = [];
+let conversationCounter = 1;
 
 // Fonction pour créer la popup des paramètres utilisateur
 function createUserSettingsPopup() {
@@ -325,6 +327,9 @@ function sendMessage() {
     const message = input.value.trim();
     
     if (message) {
+        // Supprimer le message de bienvenue s'il existe
+        removeWelcomeMessage();
+        
         // Ajouter le message à l'interface
         addMessageToUI(message, 'user');
         input.value = '';
@@ -367,6 +372,425 @@ function updateUI() {
     console.log('UI updated');
     // Faire défiler vers le bas à chaque mise à jour de l'UI
     scrollToBottom();
+}
+
+// Fonction pour créer une nouvelle conversation
+function createNewConversation() {
+    const newConversation = {
+        id: Date.now(), // ID unique basé sur le timestamp
+        title: `Conversation ${conversationCounter}`,
+        messages: [],
+        isActive: false,
+        hasWelcomeMessage: true // Flag pour le message de bienvenue
+    };
+    
+    // Désactiver toutes les autres conversations
+    conversations.forEach(conv => conv.isActive = false);
+    
+    // Activer la nouvelle conversation
+    newConversation.isActive = true;
+    
+    // Ajouter en début de liste
+    conversations.unshift(newConversation);
+    conversationCounter++;
+    
+    // Mettre à jour l'affichage
+    updateConversationsList();
+    clearMessagesContainer();
+
+    // Afficher le message de bienvenue
+    showWelcomeMessage();
+    
+    // Mettre à jour la conversation courante
+    currentConversation = newConversation.id;
+    
+    console.log('Nouvelle conversation créée:', newConversation);
+}
+
+// Fonction pour afficher le message de bienvenue
+function showWelcomeMessage() {
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    // Ajouter la classe pour le centrage
+    messagesContainer.classList.add('has-welcome');
+    
+    // Créer le message de bienvenue
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message bot-message welcome-message';
+    welcomeDiv.id = 'welcome-message';
+    welcomeDiv.innerHTML = `<p>Bonjour, COCO !</p>`;
+    
+    messagesContainer.appendChild(welcomeDiv);
+}
+
+// Fonction pour supprimer le message de bienvenue
+function removeWelcomeMessage() {
+    const welcomeMessage = document.getElementById('welcome-message');
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+        // Supprimer la classe de centrage
+        messagesContainer.classList.remove('has-welcome');
+    }
+    
+    // Marquer la conversation comme n'ayant plus le message de bienvenue
+    const activeConversation = conversations.find(conv => conv.id === currentConversation);
+    if (activeConversation) {
+        activeConversation.hasWelcomeMessage = false;
+    }
+}
+
+// Fonction pour mettre à jour la liste des conversations
+function updateConversationsList() {
+    const conversationList = document.getElementById('conversation-list');
+    
+    // Vider la liste actuelle
+    conversationList.innerHTML = '';
+    
+    // Ajouter chaque conversation
+    conversations.forEach(conversation => {
+        const conversationItem = document.createElement('div');
+        conversationItem.className = `conversation-item-wrapper ${conversation.isActive ? 'active' : ''}`;
+        
+        conversationItem.innerHTML = `
+            <button class="conversation-item ${conversation.isActive ? 'active' : ''}" onclick="selectConversation(${conversation.id})">
+                <span class="conversation-title">${conversation.title}</span>
+            </button>
+            <button class="edit-conversation-btn" onclick="editConversationTitle(${conversation.id}, event)" title="Renommer la conversation">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#e3e3e3">
+                    <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                </svg>
+            </button>
+            <button class="delete-conversation-btn" onclick="deleteConversation(${conversation.id}, event)" title="Supprimer la conversation">
+                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#e3e3e3">
+                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                </svg>
+            </button>
+        `;
+        
+        conversationList.appendChild(conversationItem);
+    });
+}
+
+
+
+
+
+
+// Fonction pour éditer le titre d'une conversation (VERSION MODAL STYLÉE)
+function editConversationTitle(conversationId, event) {
+    // Empêcher la propagation de l'événement
+    event.stopPropagation();
+    event.preventDefault();
+    
+    // Trouver la conversation
+    const conversation = conversations.find(conv => conv.id === conversationId);
+    if (!conversation) return;
+    
+    // Créer l'overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+
+    // Créer le conteneur de la popup
+    const popup = document.createElement('div');
+    popup.className = 'popup-container';
+    popup.style.cssText = `
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        padding: 30px;
+        width: 400px;
+        max-width: 90vw;
+        position: relative;
+        transform: scale(0.8);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid #404040;
+    `;
+
+    // Créer le bouton fermer
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.cssText = `
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 2em;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    `;
+
+    const header = document.createElement('div');
+    header.style.cssText = `
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        gap: 15px;
+    `;
+
+    
+
+    // Créer le contenu du formulaire
+    const content = document.createElement('div');
+    content.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <input type="text" id="edit-title-input" placeholder="Nom de la conversation" value="${conversation.title}" style="
+                width: 100%;
+                padding: 12px 16px;
+                background-color: #1a1a1a;
+                border: 1px solid #404040;
+                border-radius: 8px;
+                color: white;
+                font-size: 14px;
+                margin-bottom: 20px;
+                outline: none;
+                transition: border-color 0.3s ease;
+                font-family: Montserrat;
+            " onfocus="this.style.borderColor='#FF8A32'" onblur="this.style.borderColor='#404040'">
+            
+            <button id="save-title-btn" style="
+                width: 100%;
+                padding: 12px 20px;
+                background: linear-gradient(45deg, #ff6b6b, #ffa500);
+                border: none;
+                border-radius: 50px;
+                color: white;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-family: Montserrat;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                Sauvegarder
+            </button>
+        </div>
+    `;
+
+    // Fonction de fermeture (annulation)
+    function closePopup() {
+        popup.style.transition = 'all 0.2s ease-out';
+        overlay.style.transition = 'opacity 0.2s ease-out';
+        
+        popup.style.transform = 'scale(0.8)';
+        popup.style.opacity = '0';
+        overlay.style.opacity = '0';
+        
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                document.body.removeChild(overlay);
+            }
+        }, 250);
+        
+        console.log('Édition annulée');
+    }
+
+    // Fonction pour sauvegarder
+    function save() {
+        const input = document.getElementById('edit-title-input');
+        const newTitle = input.value.trim();
+        
+        if (newTitle && newTitle !== conversation.title) {
+            conversation.title = newTitle;
+            updateConversationsList();
+            console.log('Titre modifié:', newTitle);
+        }
+        
+        closePopup();
+    }
+
+    // Assembler la popup
+    popup.appendChild(closeButton);
+    popup.appendChild(header);
+    popup.appendChild(content);
+    overlay.appendChild(popup);
+
+    // Ajouter les événements
+    closeButton.addEventListener('click', closePopup);
+    closeButton.addEventListener('mouseenter', () => {
+        closeButton.style.transform = 'scale(1.1)';
+    });
+    closeButton.addEventListener('mouseleave', () => {
+        closeButton.style.transform = 'scale(1)';
+    });
+
+    // Fermer en cliquant en dehors (annulation)
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closePopup();
+        }
+    });
+
+    // Ajouter à la page
+    document.body.appendChild(overlay);
+
+    // Déclencher l'animation
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+        popup.style.transform = 'scale(1)';
+        popup.style.opacity = '1';
+        
+        // Focus et sélection après l'animation
+        setTimeout(() => {
+            const input = document.getElementById('edit-title-input');
+            input.select();
+            input.focus();
+        }, 100);
+    }, 10);
+
+    // Ajouter les événements après l'ajout au DOM
+    setTimeout(() => {
+        const input = document.getElementById('edit-title-input');
+        const saveBtn = document.getElementById('save-title-btn');
+        
+        saveBtn.addEventListener('click', save);
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                save();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closePopup();
+            }
+        });
+    }, 50);
+}
+
+
+
+
+
+// Fonction pour supprimer une conversation
+function deleteConversation(conversationId, event) {
+    // Empêcher la propagation de l'événement pour éviter de sélectionner la conversation
+    event.stopPropagation();
+    
+    // Trouver l'index de la conversation à supprimer
+    const conversationIndex = conversations.findIndex(conv => conv.id === conversationId);
+    
+    if (conversationIndex === -1) return;
+    
+    const conversationToDelete = conversations[conversationIndex];
+    
+    // Si c'est la conversation active, on doit en sélectionner une autre
+    if (conversationToDelete.isActive) {
+        // Supprimer la conversation
+        conversations.splice(conversationIndex, 1);
+        
+        // S'il reste des conversations, sélectionner la première
+        if (conversations.length > 0) {
+            conversations[0].isActive = true;
+            currentConversation = conversations[0].id;
+            loadConversationMessages(conversations[0]);
+        } else {
+            // Plus de conversations, créer une nouvelle
+            currentConversation = null;
+            clearMessagesContainer();
+            createNewConversation();
+            return;
+        }
+    } else {
+        // Supprimer simplement la conversation
+        conversations.splice(conversationIndex, 1);
+    }
+    
+    // Mettre à jour l'affichage
+    updateConversationsList();
+    
+    console.log('Conversation supprimée:', conversationToDelete);
+}
+
+// Fonction pour sélectionner une conversation
+function selectConversation(conversationId) {
+    // Désactiver toutes les conversations
+    conversations.forEach(conv => conv.isActive = false);
+    
+    // Activer la conversation sélectionnée
+    const selectedConversation = conversations.find(conv => conv.id === conversationId);
+    if (selectedConversation) {
+        selectedConversation.isActive = true;
+        currentConversation = conversationId;
+        
+        // Mettre à jour l'affichage
+        updateConversationsList();
+        loadConversationMessages(selectedConversation);
+    }
+}
+
+// Fonction pour charger les messages d'une conversation
+function loadConversationMessages(conversation) {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.innerHTML = '';
+    
+    // Si la conversation a le message de bienvenue et aucun message réel
+    if (conversation.hasWelcomeMessage && conversation.messages.length === 0) {
+        showWelcomeMessage();
+    } else {
+        // Charger tous les messages de la conversation
+        conversation.messages.forEach(message => {
+            addMessageToUI(message.content, message.type, false);
+        });
+    }
+    
+    scrollToBottom();
+}
+
+
+// Fonction pour vider le conteneur de messages
+function clearMessagesContainer() {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.innerHTML = '';
+}
+
+
+// Modifier la fonction addMessageToUI pour sauvegarder dans la conversation active
+function addMessageToUI(message, type, saveToConversation = true) {
+    // Si c'est un message utilisateur, supprimer le message de bienvenue
+    if (type === 'user') {
+        removeWelcomeMessage();
+    }
+    
+    const messagesContainer = document.querySelector('.messages-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    messageDiv.innerHTML = `<p>${message}</p>`;
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Sauvegarder le message dans la conversation active
+    if (saveToConversation && currentConversation) {
+        const activeConversation = conversations.find(conv => conv.id === currentConversation);
+        if (activeConversation) {
+            activeConversation.messages.push({
+                content: message,
+                type: type,
+                timestamp: new Date()
+            });
+        }
+    }
 }
 
 // Add CSS for blinking cursor
@@ -425,6 +849,9 @@ window.addEventListener('load', function() {
     restoreSidebarState();
     updateUI();
     scrollToBottom();
+
+    // Créer une première conversation par défaut
+    createNewConversation();
     
 });
 
