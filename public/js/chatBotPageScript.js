@@ -291,6 +291,9 @@ function sendMessage() {
     const message = input.value.trim();
     
     if (message) {
+        // Supprimer le message de bienvenue s'il existe
+        removeWelcomeMessage();
+        
         // Ajouter le message à l'interface
         addMessageToUI(message, 'user');
         input.value = '';
@@ -341,7 +344,8 @@ function createNewConversation() {
         id: Date.now(), // ID unique basé sur le timestamp
         title: `Conversation ${conversationCounter}`,
         messages: [],
-        isActive: false
+        isActive: false,
+        hasWelcomeMessage: true // Flag pour le message de bienvenue
     };
     
     // Désactiver toutes les autres conversations
@@ -357,11 +361,48 @@ function createNewConversation() {
     // Mettre à jour l'affichage
     updateConversationsList();
     clearMessagesContainer();
+
+    // Afficher le message de bienvenue
+    showWelcomeMessage();
     
     // Mettre à jour la conversation courante
     currentConversation = newConversation.id;
     
     console.log('Nouvelle conversation créée:', newConversation);
+}
+
+// Fonction pour afficher le message de bienvenue
+function showWelcomeMessage() {
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    // Ajouter la classe pour le centrage
+    messagesContainer.classList.add('has-welcome');
+    
+    // Créer le message de bienvenue
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message bot-message welcome-message';
+    welcomeDiv.id = 'welcome-message';
+    welcomeDiv.innerHTML = `<p>Bonjour, COCO !</p>`;
+    
+    messagesContainer.appendChild(welcomeDiv);
+}
+
+// Fonction pour supprimer le message de bienvenue
+function removeWelcomeMessage() {
+    const welcomeMessage = document.getElementById('welcome-message');
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+        // Supprimer la classe de centrage
+        messagesContainer.classList.remove('has-welcome');
+    }
+    
+    // Marquer la conversation comme n'ayant plus le message de bienvenue
+    const activeConversation = conversations.find(conv => conv.id === currentConversation);
+    if (activeConversation) {
+        activeConversation.hasWelcomeMessage = false;
+    }
 }
 
 // Fonction pour mettre à jour la liste des conversations
@@ -491,7 +532,7 @@ function editConversationTitle(conversationId, event) {
                 margin-bottom: 20px;
                 outline: none;
                 transition: border-color 0.3s ease;
-                font-family: Montserrat, sans-serif;
+                font-family: Montserrat;
             " onfocus="this.style.borderColor='#FF8A32'" onblur="this.style.borderColor='#404040'">
             
             <button id="save-title-btn" style="
@@ -505,7 +546,7 @@ function editConversationTitle(conversationId, event) {
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.3s ease;
-                font-family: Montserrat, sans-serif;
+                font-family: Montserrat;
             " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 107, 107, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                 Sauvegarder
             </button>
@@ -668,10 +709,15 @@ function loadConversationMessages(conversation) {
     const messagesContainer = document.querySelector('.messages-container');
     messagesContainer.innerHTML = '';
     
-    // Charger tous les messages de la conversation
-    conversation.messages.forEach(message => {
-        addMessageToUI(message.content, message.type, false);
-    });
+    // Si la conversation a le message de bienvenue et aucun message réel
+    if (conversation.hasWelcomeMessage && conversation.messages.length === 0) {
+        showWelcomeMessage();
+    } else {
+        // Charger tous les messages de la conversation
+        conversation.messages.forEach(message => {
+            addMessageToUI(message.content, message.type, false);
+        });
+    }
     
     scrollToBottom();
 }
@@ -686,6 +732,11 @@ function clearMessagesContainer() {
 
 // Modifier la fonction addMessageToUI pour sauvegarder dans la conversation active
 function addMessageToUI(message, type, saveToConversation = true) {
+    // Si c'est un message utilisateur, supprimer le message de bienvenue
+    if (type === 'user') {
+        removeWelcomeMessage();
+    }
+    
     const messagesContainer = document.querySelector('.messages-container');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;

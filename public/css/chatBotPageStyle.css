@@ -311,9 +311,40 @@ hr {
 }
 
 
+/* Message de bienvenue */
+.welcome-message {
+    background: linear-gradient(135deg, #ff6b6b, #ffa500) !important;
+    color: white !important;
+    border: none !important;
+    text-align: center;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-width: 600px !important; /* Augmentation de 450px à 600px */
+    width: auto !important;
+    margin: 0 !important;
+    z-index: 1;
+    padding: 20px 40px !important; 
+    border-radius: 25px !important; 
+    font-size: 25px !important; 
+}
+
+.welcome-message p {
+    margin: 0;
+    font-size: 25px; 
+}
 
 
 
+/* Container pour les messages avec le message de bienvenue centré */
+.messages-container.has-welcome {
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
 
 /* Animation de rétraction */
 .sidebar.retracted .sidebar-header .internet-toggle,
