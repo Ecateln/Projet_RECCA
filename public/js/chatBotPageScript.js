@@ -41,7 +41,7 @@ function toggleSidebar() {
 
 // Fonction pour basculer la recherche sur Internet
 function toggleInternetResearch() {
-    internetResearch = !internetResearch;
+    internetResearch = document.getElementById('internetToggle').checked;
     console.log('Internet Research:', internetResearch);
 }
 
@@ -81,10 +81,9 @@ function showWelcomeMessage() {
 
     // Créer le message de bienvenue
     const welcomeDiv = document.createElement('div');
-    welcomeDiv.className = 'message bot-message welcome-message';
+    welcomeDiv.className = 'bot-message welcome-message';
     welcomeDiv.id = 'welcome-message';
     welcomeDiv.innerHTML = `<p>Bonjour ${username}</p>`;
-    // TODO CLEMENT: RECUPERER LE PSEUDO
 
     messagesContainer.appendChild(welcomeDiv);
     isWelcomeDisplayed = true;
@@ -298,24 +297,22 @@ function createUserSettingsPopup() {
             ">
                 Sauvegarder
             </button>
-
-            <button type="submit" class="deconnexion_button" style="
-                width: 100%;
-                padding: 12px 20px;
-                background: linear-gradient(135deg, #ff6b6b,rgb(255, 52, 52));
-                border: none;
-                border-radius: 50px;
-                color: white;
-                font-size: 16px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-family: Montserrat;
-                margin-top: 10px;
-            ">
-                Deconnexion
-            </button>
         </form>
+        <button class="deconnexion_button" style="
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ff6b6b,rgb(255, 52, 52));
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: Montserrat;
+        " onclick="window.location.href='/logout';">
+            Déconnexion
+        </button>
     `;
 
     // Personnalisation du style de la scrollbar
@@ -354,7 +351,7 @@ function createUserSettingsPopup() {
         .animation_button:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
-            background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39)) !important;
+            background: linear-gradient(135deg,rgb(255, 113, 113),rgb(252, 174, 40)) !important;
         }
 
         .animation_button:active {
@@ -374,7 +371,7 @@ function createUserSettingsPopup() {
         .deconnexion_button:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3) !important;
-            background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39)) !important;
+            background: linear-gradient(135deg,rgb(255, 107, 107),rgb(255, 73, 73)) !important;
         }
 
         .deconnexion_button:active {
@@ -418,7 +415,7 @@ function createUserSettingsPopup() {
         closeButton.style.transform = 'scale(1)';
     });
 
-    overlay.addEventListener('click', (e) => {
+    overlay.addEventListener('mousedown', (e) => {
         if (e.target === overlay) {
             closePopup();
         }
@@ -442,19 +439,6 @@ function createUserSettingsPopup() {
         popup.style.transform = 'scale(1)';
         popup.style.opacity = '1';
     }, 10);
-}
-
-// Fonctions à implémenter pour récupérer les valeurs actuelles
-function getCurrentUsername() {
-    // TODO: CLEMENT - Récupérer le nom d'utilisateur actuel
-    // Ceci pourrait venir du localStorage, d'une variable globale, ou d'un appel API
-    return localStorage.getItem('username') || '';
-}
-
-function getCurrentPersonalization() {
-    // TODO: CLEMENT - Récupérer la personnalisation actuelle
-    // Ceci pourrait venir du localStorage, d'une variable globale, ou d'un appel API
-    return localStorage.getItem('personalization') || '';
 }
 
 // Function to show the success notification
@@ -696,8 +680,12 @@ function updateStreamingMessage() {
         messagesContainer.appendChild(streamingEl);
     }
 
-    // Convertir le markdown en HTML pour les messages bot en streaming
-    streamingEl.innerHTML = `<div>${marked.parse(currentResponse)}<span style="animation: blink 1s infinite;">|</span></div>`;
+    // Add cursor to the response text before parsing
+    const responseWithCursor = currentResponse + '<span style="animation: blink 1s infinite; display: inline;">|</span>';
+    
+    // Parse the markdown content with cursor included
+    streamingEl.innerHTML = marked.parse(responseWithCursor);
+    
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -730,6 +718,13 @@ async function loadConversationMessages(conversation) {
     } else showWelcomeMessage();
 
     scrollToBottom();
+}
+
+function toggleInput(value) {
+    const input = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    if (input) input.disabled = value;
+    if (sendBtn) sendBtn.disabled = value;
 }
 
 // ------------------------------------------------------------
@@ -786,9 +781,9 @@ function initSocket() {
                 addMessageToUI(currentResponse, 'bot');
                 currentResponse = '';
             }
+
             // Re-enable send button after response is complete
-            const sendBtn = document.getElementById('send-btn');
-            if (sendBtn) sendBtn.disabled = false;
+            toggleInput(false);
         } else {
             // Streaming token
             currentResponse += token;
@@ -916,6 +911,8 @@ function sendMessage() {
         // Store the message to send after conversation is created
         sessionStorage.setItem('pendingMessage', message);
         input.value = '';
+
+        toggleInput(true);
         return;
     }
 
@@ -934,8 +931,7 @@ function sendMessage() {
     currentResponse = '';
 
     // Disable send button during response
-    const sendBtn = document.getElementById('send-btn');
-    if (sendBtn) sendBtn.disabled = true;
+    toggleInput(true);
 }
 
 // Fonction pour créer une nouvelle conversation à partir d'un message
@@ -1216,6 +1212,13 @@ function deleteConversation(conversationId, event) {
 
     const conversation = conversations.find(conv => conv.id === conversationId);
     if (!conversation) return;
+
+    // Si la conversation courante est supprimée, réinitialiser currentConversation
+    if (currentConversation === conversationId) {
+        currentConversation = null;
+        clearMessagesContainer();
+        showWelcomeMessage();
+    }
 
     // if (confirm(`Êtes-vous sûr de vouloir supprimer la conversation "${conversation.title}" ?`)) {
     console.log('Deleting conversation:', conversation.title);
