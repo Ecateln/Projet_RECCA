@@ -120,12 +120,18 @@ body {
 .internet-toggle-left {
     display: flex;
     align-items: center;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1; 
 }
 
 .internet-toggle svg {
     margin-right: 9px;
     margin-left: -5px;
     fill: white;
+    flex-shrink: 0; 
+    transform: none !important;
+    transition: none !important;
 }
 
 .internet-toggle input[type="checkbox"] {
@@ -173,6 +179,12 @@ body {
     font-size: 15px;
     transform: scale(1);
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis; 
+    min-width: 0;
+    flex: 1; 
 }
 
 .new-chat-btn:hover {
@@ -213,6 +225,29 @@ hr {
     width: 100%;
     max-width: 100%;
     overflow: hidden; /* Empêche le débordement */
+}
+
+.conversations-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Prendre l'espace restant */
+    min-height: 0; /* Important pour permettre le scroll */
+}
+
+.conversations-section h3 {
+    color: #e3e3e3;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding: 0 5px;
+}
+
+.conversation-list {
+    margin-top: 10px;
+    flex: 1; /* Prendre tout l'espace disponible */
+    overflow-y: auto; /* Permettre le scroll vertical */
+    padding: 0 5px;
+    min-height: 0; /* Important pour le flexbox */
 }
 
 .conversation-item-wrapper:hover {
@@ -391,7 +426,38 @@ hr {
 .sidebar.retracted .conversations-section {
     opacity: 0;
     pointer-events: none;
-    transform: translateX(-20px);
+    font-size: 0px;
+    transform: translateX(-80px);
+    transition: opacity 0.15s ease-out, transform 0.3s ease;
+}
+
+/* Transitions pour les éléments de la sidebar */
+.sidebar-header .internet-toggle,
+.sidebar-header .new-chat-btn,
+.sidebar hr,
+.sidebar .conversations-section {
+    transition: opacity 0.2s ease, transform 0.3s ease;
+}
+
+/* Pour éviter que le texte se déforme pendant la transition */
+.sidebar.retracted .internet-toggle .internet-toggle-left,
+.sidebar.retracted .new-chat-btn {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Animation spécifique pour les textes des boutons */
+.internet-toggle .internet-toggle-left,
+.new-chat-btn {
+    transition: opacity 0.1s ease-out;
+}
+
+.sidebar.retracted .internet-toggle .internet-toggle-left,
+.sidebar.retracted .new-chat-btn span,
+.sidebar.retracted .new-chat-btn svg + * {
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
 }
 
 /* ZONE DE CHAT PRINCIPALE */
@@ -478,6 +544,12 @@ hr {
     line-height: 1.5;
     word-wrap: break-word;
     animation: fadeIn 0.3s ease;
+
+    /* Allow text selection for messages */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 @keyframes fadeIn {
@@ -507,8 +579,69 @@ hr {
     border: 1px solid #404040;
 }
 
-.message p {
+.bot-message li {
+    margin-bottom: 8px;
+    margin-top: 8px;
+    line-height: 1.5;
+    margin-left: 20px;
+    text-indent: 0;
+}
+
+.bot-message p {
     margin: 0;
+}
+
+.bot-message strong {
+    font-weight: 600;
+    color: #fff;
+}
+
+.bot-message em {
+    font-style: italic;
+    color: #e3e3e3;
+}
+
+.bot-message a {
+    color: #2190ff;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.bot-message a:hover {
+    color: rgb(84, 169, 255); 
+    text-decoration: none;
+}
+
+.bot-message a:visited {
+    color: #d145ff;
+}
+
+.bot-message code {
+    color: #ff6b6b !important; 
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 13px !important;
+
+}
+
+.bot-message pre {
+    background-color: #2a2a2a !important;
+    border: 1px solid #505050 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    margin: 8px 0 !important;
+    overflow-x: auto !important;
+}
+
+/* Allow text selection for all message content */
+.message p, .message div, .message span, .message strong, .message em, 
+.message ul, .message ol, .message li, .message code, .message pre,
+.message h1, .message h2, .message h3, .message h4, .message h5, .message h6 {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 /* ZONE DE SAISIE */
@@ -583,9 +716,8 @@ hr {
 }
 
 /* SCROLLBARS */
-/* SCROLLBARS */
 .conversation-list::-webkit-scrollbar,
-.messages-container::-webkit-scrollbar {
+.messages-container::-webkit-scrollbar{
     width: 6px;
 }
 
@@ -602,6 +734,23 @@ hr {
 
 .conversation-list::-webkit-scrollbar-thumb:hover,
 .messages-container::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+.bot-message pre::-webkit-scrollbar{
+    height: 6px;
+}
+
+.bot-message pre::-webkit-scrollbar-track{
+    background: transparent;
+}
+
+.bot-message pre::-webkit-scrollbar-thumb {
+    background-color: #404040;
+    border-radius: 10px;
+}
+
+.bot-message pre::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }
 

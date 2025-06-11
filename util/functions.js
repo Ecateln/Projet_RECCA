@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from 'fs';
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
 
-function appendBasePromptMessage(conversation, base_prompt) {
+function appendBasePromptMessage(conversation, user_data) {
     conversation.messages.unshift({
         id: 0,
         role: "system",
@@ -25,11 +25,11 @@ function appendBasePromptMessage(conversation, base_prompt) {
             The user has the ability to enable or disable web search.
             If a question they ask is too complex or requires more information, you will suggest them to enable web search.
 
-            When the user mentions "UPHF", they are referring to the University Polytechniques des Hauts-de-France of Valenciennes, located in France.
+            When the user mentions "UPHF", they are referring to the "Université Polytechnique des Hauts-de-France" of Valenciennes, located in France.
+            You will always answer in the language of the user. If you are unusre of the language, you will answer in French, unless they specifically ask you to answer in another language.
 
-            You will always answer in the language of the user. Assume their language is French by default, unless they specify otherwise.
-            Here is some information provided by the user, only refer to this information if it is relevant to the question asked:
-            ${base_prompt || "Aucune information fournie."}`,
+            Here is some very important information provided by the user. You are to use this information as needed, but only refer to it if the user asks you to.
+            Username: ${user_data.username} - other important information ${user_data.base_prompt || "Aucune information fournie."}`,
         created_at: new Date(0),
     });
 }
@@ -39,7 +39,7 @@ async function getGoogleResults(query) {
     const data = await fetch(url).then(res => res.json()).catch(_ => null);
 
     if (!data || data.error) {
-        console.error("Google search results:", data?.error);
+        console.log("Google search results:", data?.error);
         return [];
     }
 
@@ -84,7 +84,7 @@ async function extractContentFromUrl(url) {
 
         return filterContent(text);
     } catch (err) {
-        console.error(`Erreur lors de l'extraction du contenu de l'URL ${url}:`, err);
+        console.log(`Erreur lors de l'extraction du contenu de l'URL ${url}:`, err);
         return null;
     }
 }
@@ -94,7 +94,7 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
 
     const messages = previous_messages.slice();
 
-    console.log("Asking agent with prompt:", prompt, "web search enabled:", web, "think enabled:", think);
+    console.log("Asking agent with prompt:", prompt, "web search:", web);
 
     if (web) {
         // Generation du texte web a cherche
@@ -125,15 +125,15 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
                 think: false,
             });
 
-            console.error("Web search response:", response.message.content);
+            console.log("Web search response:", response.message.content);
             const requests_uphf = response.message.content.match(/\s(UPHF|INSA)\s/i);
-            console.error("UPHF detected in web search request? ", requests_uphf);
+            console.log("UPHF detected in web search request? ", requests_uphf);
 
             // Recherche web
             const web_request = response.message.content.replace(/\s+UPHF\s+$|[^a-zA-Z0-9\s]/g, '').trim();
             // console.log('Réponse de l’IA :' + web_request);
             const urls = await getGoogleResults(web_request);
-            console.error("Web search URLs:", urls);
+            console.log("Web search URLs:", urls);
 
             let webContent = "";
             for (const url of urls) {
@@ -147,15 +147,12 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
             if (requests_uphf) {
                 const files = readdirSync('data');
                 for (const file of files) {
-                    console.error("Processing file:", file);
                     if (!file.endsWith('.txt')) continue;
 
                     files_content += `Content of file "${file}":\n`;
                     files_content += readFileSync(`data/${file}`, 'utf-8');
                     files_content += `\n\n`;
                 }
-
-                console.log("Files content:", files_content);
             }
 
             // Ajouter le contenu web au prompt
@@ -180,16 +177,14 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
 
                 END OF THE INSA/UPHF FILES</files>` : ''}
 
-                Make sure to keep answering to the user's question in the same language as the user.`,
+                Here is the question you need to answer:
+                <question>${prompt}</question>`,
             });
         } catch (error) {
             throw `Erreur lors de la recherche web: ${error.message}\n\n`;
         }
-    }
+    } else messages.push(question);
 
-
-    // messages.push({ ...question, content: prompt });
-    messages.push(question);
     const response = await ollama.chat({
         // model: 'qwen3:4b',
         // model: 'mistral:7b',

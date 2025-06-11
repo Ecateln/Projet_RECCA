@@ -67,10 +67,9 @@ socket_server.on('connection', (socket) => {
         );
     });
 
+    // Abort any ongoing query
     socket.on('disconnect', () => {
-        // Abort any ongoing query
         socket.abort_controller?.abort();
-
         // console.log('A user disconnected');
     });
 });
@@ -79,7 +78,6 @@ app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html
 app.get('/login', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
 app.get('/register', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
 app.get('/logout', (req, res) => res.clearCookie('token').redirect('/login'));
-// TODO: favicon link
 
 app.post('/register', async (req, res) => {
     const body = req.body;
