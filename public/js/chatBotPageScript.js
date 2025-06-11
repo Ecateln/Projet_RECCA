@@ -1121,7 +1121,7 @@ function selectConversation(conversationId) {
         loadConversationMessages(selectedConversation);
     }
 }
-// Fonction pour faire défiler vers le bas
+
 // Add CSS for blinking cursor
 const style = document.createElement('style');
 style.textContent = `
