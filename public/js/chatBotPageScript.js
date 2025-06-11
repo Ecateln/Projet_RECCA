@@ -569,7 +569,7 @@ function editConversationTitle(conversationId, event) {
                 outline: none;
                 transition: border-color 0.3s ease;
                 font-family: Montserrat;
-            " onfocus="this.style.borderColor='#FF8A32'" onblur="this.style.borderColor='#404040'">
+            " onfocus="this.style.borderColor='#FF8A32'; this.style.boxShadow='0 0 0 2px #ffa50033'" onblur="this.style.borderColor='#404040'; this.style.boxShadow='none'">
             
             <button id="save-title-btn" style="
                 width: 100%;

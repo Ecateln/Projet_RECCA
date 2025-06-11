@@ -271,11 +271,11 @@ hr {
 }
 
 .edit-conversation-btn:hover {
-    background-color: rgba(74, 158, 255, 0.2);
+    background-color: rgba(255, 136, 50, 0.2);
 }
 
 .edit-conversation-btn:hover svg {
-    fill: #4a9eff;
+    fill: #FF8A32;
 }
 
 .edit-conversation-btn svg {
