@@ -94,9 +94,11 @@ function showWelcomeMessage() {
     const welcomeDiv = document.createElement('div');
     welcomeDiv.className = 'message bot-message welcome-message';
     welcomeDiv.id = 'welcome-message';
-    welcomeDiv.innerHTML = `<p>Bonjour Coco </p>`;
-    
+    welcomeDiv.innerHTML = `<p>Bonjour Coco</p>`;
+    // TODO CLEMENT: RECUPERER LE PSEUDO
+
     messagesContainer.appendChild(welcomeDiv);
+    isWelcomeDisplayed = true;
 }
 
 // Fonction pour supprimer le message de bienvenue
@@ -106,15 +108,17 @@ function removeWelcomeMessage() {
     
     if (welcomeMessage) {
         welcomeMessage.remove();
-        // Supprimer la classe de centrage
         messagesContainer.classList.remove('has-welcome');
     }
     
-    // Marquer définitivement la conversation comme n'ayant plus le message de bienvenue
+    // Marquer la conversation active comme n'ayant plus le message de bienvenue
     const activeConversation = conversations.find(conv => conv.id === currentConversation);
     if (activeConversation) {
         activeConversation.hasWelcomeMessage = false;
     }
+    
+    // On n'est plus en mode bienvenue
+    isWelcomeDisplayed = false;
 }
 
 // Fonction pour ouvrir la sidebar mobile
@@ -629,6 +633,41 @@ function createErrorNotification(message = "Une erreur est survenue") {
     }, 10);
 }
 
+
+// Fonction pour vider le conteneur de messages
+function clearMessagesContainer() {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.innerHTML = '';
+    // Supprimer la classe de centrage
+    messagesContainer.classList.remove('has-welcome');
+}
+
+// Fonction pour charger les messages d'une conversation
+function loadConversationMessages(conversation) {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.innerHTML = '';
+    
+    // Supprimer la classe de centrage par défaut
+    messagesContainer.classList.remove('has-welcome');
+    
+    // Afficher le message de bienvenue SEULEMENT si la conversation est vraiment vide
+    if (conversation.hasWelcomeMessage && conversation.messages.length === 0) {
+        showWelcomeMessage();
+    } else {
+        // Si il y a des messages, on ne montre plus jamais le message de bienvenue
+        if (conversation.messages.length > 0) {
+            conversation.hasWelcomeMessage = false;
+        }
+        
+        // Charger tous les messages de la conversation
+        conversation.messages.forEach(message => {
+            addMessageToUI(message.content, message.type);
+        });
+    }
+    
+    scrollToBottom();
+}
+
 // ------------------------------------------------------------
 /* */
 
@@ -688,6 +727,11 @@ function sendMessage() {
     const message = input.value.trim();
     
     if (message) {
+        // Si on n'est pas dans une conversation, en créer une nouvelle
+        if (!currentConversation) {
+            createNewConversationFromMessage();
+        }
+        
         // Supprimer le message de bienvenue s'il existe
         removeWelcomeMessage();
         
@@ -701,21 +745,44 @@ function sendMessage() {
     }
 }
 
-// Fonction pour créer une nouvelle conversation
-function createNewConversation() {
+// Fonction pour créer une nouvelle conversation à partir d'un message
+function createNewConversationFromMessage() {
     const newConversation = {
-        id: Date.now(), // ID unique basé sur le timestamp
+        id: Date.now(),
         title: `Conversation ${conversationCounter}`,
         messages: [],
-        isActive: false,
-        hasWelcomeMessage: true // Flag pour le message de bienvenue
+        isActive: true,
+        hasWelcomeMessage: false // Pas de message de bienvenue car on va directement ajouter un message
     };
     
     // Désactiver toutes les autres conversations
     conversations.forEach(conv => conv.isActive = false);
     
-    // Activer la nouvelle conversation
-    newConversation.isActive = true;
+    // Ajouter en début de liste
+    conversations.unshift(newConversation);
+    conversationCounter++;
+    
+    // Mettre à jour la conversation courante
+    currentConversation = newConversation.id;
+    
+    // Mettre à jour l'affichage
+    updateConversationsList();
+    
+    console.log('Nouvelle conversation créée depuis un message:', newConversation);
+}
+
+// Fonction pour créer une nouvelle conversation
+function createNewConversation() {
+    const newConversation = {
+        id: Date.now(),
+        title: `Conversation ${conversationCounter}`,
+        messages: [],
+        isActive: true,
+        hasWelcomeMessage: true // Flag pour le message de bienvenue
+    };
+    
+    // Désactiver toutes les autres conversations
+    conversations.forEach(conv => conv.isActive = false);
     
     // Ajouter en début de liste
     conversations.unshift(newConversation);
@@ -730,8 +797,45 @@ function createNewConversation() {
     
     // Mettre à jour la conversation courante
     currentConversation = newConversation.id;
+    isWelcomeDisplayed = false; // On n'est plus sur la page d'accueil
     
     console.log('Nouvelle conversation créée:', newConversation);
+}
+
+// Fonction pour afficher le message de bienvenue
+function showWelcomeMessage() {
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    // Ajouter la classe pour le centrage
+    messagesContainer.classList.add('has-welcome');
+    
+    // Créer le message de bienvenue
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message bot-message welcome-message';
+    welcomeDiv.id = 'welcome-message';
+    welcomeDiv.innerHTML = `<p>Bonjour, Coco</p>`;
+    
+    messagesContainer.appendChild(welcomeDiv);
+}
+
+// Fonction pour supprimer le message de bienvenue
+function removeWelcomeMessage() {
+    const welcomeMessage = document.getElementById('welcome-message');
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+        messagesContainer.classList.remove('has-welcome');
+    }
+    
+    // Marquer la conversation active comme n'ayant plus le message de bienvenue
+    const activeConversation = conversations.find(conv => conv.id === currentConversation);
+    if (activeConversation) {
+        activeConversation.hasWelcomeMessage = false;
+    }
+    
+    // On n'est plus en mode bienvenue
+    isWelcomeDisplayed = false;
 }
 
 // Fonction pour mettre à jour la liste des conversations
@@ -857,7 +961,7 @@ function editConversationTitle(conversationId, event) {
                 outline: none;
                 transition: border-color 0.3s ease;
                 font-family: Montserrat;
-            " onfocus="this.style.borderColor='#FF8A32'" onblur="this.style.borderColor='#404040'">
+            " onfocus="this.style.borderColor='#FF8A32'; this.style.boxShadow='0 0 0 2px #ffa50033'" onblur="this.style.borderColor='#404040'; this.style.boxShadow='none'">
             
             <button id="save-title-btn" style="
                 width: 100%;
@@ -969,19 +1073,15 @@ function editConversationTitle(conversationId, event) {
 
 // Fonction pour supprimer une conversation
 function deleteConversation(conversationId, event) {
-    // Empêcher la propagation de l'événement pour éviter de sélectionner la conversation
     event.stopPropagation();
     
-    // Trouver l'index de la conversation à supprimer
     const conversationIndex = conversations.findIndex(conv => conv.id === conversationId);
-    
     if (conversationIndex === -1) return;
     
     const conversationToDelete = conversations[conversationIndex];
     
-    // Si c'est la conversation active, on doit en sélectionner une autre
+    // Si c'est la conversation active
     if (conversationToDelete.isActive) {
-        // Supprimer la conversation
         conversations.splice(conversationIndex, 1);
         
         // S'il reste des conversations, sélectionner la première
@@ -990,20 +1090,17 @@ function deleteConversation(conversationId, event) {
             currentConversation = conversations[0].id;
             loadConversationMessages(conversations[0]);
         } else {
-            // Plus de conversations, créer une nouvelle
+            // Plus de conversations, retourner à la page d'accueil
             currentConversation = null;
             clearMessagesContainer();
-            createNewConversation();
-            return;
+            showWelcomePage();
         }
     } else {
         // Supprimer simplement la conversation
         conversations.splice(conversationIndex, 1);
     }
     
-    // Mettre à jour l'affichage
     updateConversationsList();
-    
     console.log('Conversation supprimée:', conversationToDelete);
 }
 
@@ -1017,47 +1114,14 @@ function selectConversation(conversationId) {
     if (selectedConversation) {
         selectedConversation.isActive = true;
         currentConversation = conversationId;
+        isWelcomeDisplayed = false;
         
         // Mettre à jour l'affichage
         updateConversationsList();
         loadConversationMessages(selectedConversation);
     }
 }
-
-// Fonction pour charger les messages d'une conversation
-function loadConversationMessages(conversation) {
-    const messagesContainer = document.querySelector('.messages-container');
-    messagesContainer.innerHTML = '';
-    
-    // Supprimer la classe de centrage par défaut
-    messagesContainer.classList.remove('has-welcome');
-    
-    // Afficher le message de bienvenue SEULEMENT si la conversation est vraiment vide
-    if (conversation.hasWelcomeMessage && conversation.messages.length === 0) {
-        showWelcomeMessage();
-    } else {
-        // Si il y a des messages, on ne montre plus jamais le message de bienvenue
-        if (conversation.messages.length > 0) {
-            conversation.hasWelcomeMessage = false;
-        }
-        
-        // Charger tous les messages de la conversation
-        conversation.messages.forEach(message => {
-            addMessageToUI(message.content, message.type, false);
-        });
-    }
-    
-    scrollToBottom();
-}
-
-// Fonction pour vider le conteneur de messages
-function clearMessagesContainer() {
-    const messagesContainer = document.querySelector('.messages-container');
-    messagesContainer.innerHTML = '';
-    // Supprimer la classe de centrage
-    messagesContainer.classList.remove('has-welcome');
-}
-
+// Fonction pour faire défiler vers le bas
 // Add CSS for blinking cursor
 const style = document.createElement('style');
 style.textContent = `
@@ -1088,10 +1152,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Fonction pour envoyer un message avec la touche Entrée
+document.addEventListener('DOMContentLoaded', function() {
+    const messageInput = document.getElementById('message-input');
+    
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); // Empêche le saut de ligne
+                sendMessage();
+            }
+        });
+    }
+});
+
+
 // Initialize when page loads
 window.addEventListener('load', function() {
     restoreSidebarState();
     scrollToBottom();
-    
+    showWelcomeMessage();
 });
 
