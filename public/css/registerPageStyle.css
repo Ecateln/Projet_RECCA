@@ -9,19 +9,50 @@ body {
 /* Left Section */
 .register_section {
     flex: 1;
-    background-color: #0f0f0f;
+    background-color: #1A1A1A;
     color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 16vh;
+    justify-content: center;
     position: relative;
+    padding-bottom: 7vh;
     
+}
+
+/* Mobile Logo - hidden by default */
+.mobile-logo {
+    display: none;
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 200px;
+    height: auto;
+    z-index: 10;
+}
+
+.shape{
+    display: none;
+    position: absolute;
+    max-width: 50%;
+    height: auto;
+    z-index: 5;
+}
+
+#shape1{
+    bottom: 0;
+    right: 0;
+}
+
+#shape2{
+    top: 0;
+    left: 0;
 }
 
 .container {
     display: flex;
-    height: 100vh;
+    height: 100dvh;
     font-family: Montserrat;
     letter-spacing: 1px;
 }
@@ -45,7 +76,9 @@ input {
     font-size: 1.3rem;
     font-weight: 500;
     font-family: Montserrat;
-    color: white
+    text-overflow: ellipsis;
+    color: white;
+    
 }
 
 input:focus {
@@ -147,4 +180,121 @@ input::placeholder {
     background-position: left;
     background-repeat: no-repeat;
 
+}
+
+/* Popups */
+.popup-overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.popup-container{
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    color: white;
+    font-family: Montserrat, sans-serif;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.7);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+}
+
+/* Adjustements for the image */
+@media screen and (max-width: 1300px) {
+    .image_section {
+        background-position: 38% center;
+    }
+}
+
+@media screen and (max-width: 850px) {
+    .image_section {
+        background-position: 43% center;
+    }
+}
+
+/* Media Queries - Responsive Design */
+@media screen and (max-width: 780px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .image_section {
+        display: none;
+    }
+    
+    .login_section {
+        flex: 1;
+        width: 100%;
+    }
+    
+    #welcome {
+        font-size: 2.2em;
+        text-align: center;
+    }
+    
+    input {
+        width: 80%;
+        font-size: 1.1rem;
+    }
+    
+    .colored_button {
+        width: 85%;
+        font-size: 1.5rem;
+    }
+
+    .mobile-logo {
+        display: block;
+        max-width: 75%;
+        max-height: 9.8%;
+        top: 8vh;
+    }
+
+    .shape {
+        display: block;
+    }
+}
+
+/* For phones */
+@media screen and (max-width: 480px) {
+    #welcome {
+        font-size: 2em;
+        letter-spacing: 2px;
+    }  
+    
+    .login {
+        font-size: 1.1em;
+        font-weight: 400;
+    }
+     
+    .credits {
+        font-size: 0.8em;
+    }
+
+    .popup-container{
+        width: 80%;
+        padding: 20px;
+    }
+
+    .mobile-logo {
+        max-width: 75%;
+        top: 8vh;
+    }
+
+    .shape {
+        display: block;
+    }
 }
