@@ -1,6 +1,6 @@
 # 🛡️ Recca Chatbot - Une IA conversationnelle orientée cybersécurité
 
-Ce projet propose un **chatbot spécialisé en cybersécurité** utilisant **Ollama** pour servir le modèle **de votre choix**, enrichi par un pipeline **RAG (Retrieval-Augmented Generation)** et des **scripts de scraping web**. Le projet inclut également la configuration necessaire a la mise en plce d'un **serveur avec base de données utilisateurs**, permettant une interaction personnalisée et sécurisée.
+Ce projet propose un **chatbot spécialisé en cybersécurité** utilisant **Ollama** pour servir le modèle **de votre choix**, enrichi par un pipeline **RAG (Retrieval-Augmented Generation)** et des **scripts de scraping web**. Le projet inclut également la configuration necessaire a la mise en place d'un **serveur avec base de données utilisateurs**, permettant une interaction personnalisée et sécurisée.
 
 ## 🔧 Fonctionnalités
 
@@ -73,28 +73,28 @@ Branches dans ce git :<br/>
 - PostgreSQL (ou SQLite selon configuration)<br/>
 - Un serveur web pour l'hebergement<br/>
 
-> Note : tout les composant ci dessus peuvent tourner dans des containers Dockers indépendant si besoin
+> Note : tout les composants ci-dessus peuvent tourner dans des containers Dockers indépendants si besoin
 
-### Marche a suivre : 
+### Marche à suivre : 
 
 - Téléchargez et Installez [Ollama](https://ollama.com/download).
 
 - Parcourez les differents [Modeles](https://ollama.com/search).
 
 - Selectionner le modèle de votre choix.
-> Pensez à prendre un modele en adequation avec vos besoins et les ressources de votre machine.
+> Pensez à prendre un modele en adéquation avec vos besoins et les ressources de votre machine.
 
-Une fois le modele selectionné, ouvrez un terminal :
+Une fois le modèle sélectionné, ouvrez un terminal :
 </br>
 </br>
-Telechargez le modele en executant : ollama pull nom_du_modele
+Téléchargez le modèle en executant : ollama pull nom_du_modele
 
 Ex :
 ```
 ollama pull deepseek-r1
 ```
 </br>
-Vous pouvez tester le modele en executant : ollama run nom_du_modele
+Vous pouvez tester le modèle en executant : ollama run nom_du_modele
 
 Ex : 
 ```
@@ -104,7 +104,7 @@ ollama run deepseek-r1
 > Aide : Appuyez sur Ctrl+D pour sortir de la console de prompt
 
 </br>
-Pour rendre votre modele disponible sur un port de votre pc exécutez : ollama serve nom_du_modele 
+Pour rendre votre modèle disponible sur un port de votre pc exécutez : ollama serve nom_du_modele 
 
 Ex : 
 ```
@@ -117,7 +117,7 @@ ollama serve deepseek-r1
 
 ### Installation via GitHub : 
 </br>
-Rendez vous dans le répertoire dans lequel vous voulez télécharger le serveur chatbot et ouvrez un terminal.
+Rendez-vous dans le répertoire dans lequel vous voulez télécharger le serveur chatbot et ouvrez un terminal.
 </br>
 </br>
 
@@ -183,9 +183,9 @@ Voici un apercu des tables necessaires au bon fonctionnement du chatbot :
 |             | User_id              | Number EXTERNAL KEY                 |
 |             | Expires_at           | TIMESTAMP                           |
 
-Ces tables peuvent bien sur etre modifiées/améliorées<br/>
+Ces tables peuvent bien sur être modifiées/améliorées<br/>
 ### Modele IA 
-Representation du Model IA et des composants auxiliaires :
+Représentation du Model IA et des composants auxiliaires :
 </br>
 
 &emsp;&emsp;_______ BDD</br>
@@ -201,7 +201,7 @@ Serveur ── Web Scrapper</br>
 &emsp;&emsp;&emsp;&emsp;    Model IA</br>
 
 #### Serveur Node.js :
-Le serveur Node.js joue le rôle de répartiteur:
+Le serveur Node.js joue le rôle de répartiteur :
 - Il reçoit les prompts de l’utilisateur.</br></br>
 - Il invoque le scrapper web sur demande de l’utilisateur.</br></br>
 - Enfin, il établit un socket de connexion qui transmet le prompt (et les informations récupérées du web si le scrapper est activé) au modèle d’IA disponible grâce à une instance de serveur Ollama, qui sert d’interface pour faire tourner le modèle localement.</br>
@@ -217,7 +217,7 @@ Les technologies utilisées sont: Express pour la gestion des routes HTTP(S), le
 
 Cette base de données permet de conserver un historique des échanges pour chaque utilisateur.
 
-Elle permet également la mise en place d’un système de prompt générique, lu à chaque début de conversation. Celui est rentré par l’utilisateur à sa convenance, dans un souci de personnalisation des réponses du modèle. Ainsi a chaque fois que l’utilisateur crée une discussion, ce prompt sera inséré en tant que première instruction au modèle afin de personnaliser la suite des échanges selon les souhaits de l’utilisateur.
+Elle permet également la mise en place d’un système de prompt générique, lu à chaque début de conversation. Celui-ci est rentré par l’utilisateur à sa convenance, dans un souci de personnalisation des réponses du modèle. Ainsi a chaque fois que l’utilisateur crée une discussion, ce prompt sera inséré en tant que première instruction au modèle afin de personnaliser la suite des échanges selon les souhaits de l’utilisateur.
 </br>
 #### Web Scrapper
 En parallèle nous avons également mis en place un scrapper web qui a pour but de combler les informations auxquelles l’IA ne peut pas avoir accès. 
@@ -225,7 +225,7 @@ Il s’agit d’un script Node.js qui :
 - Intercepte le prompt que l’utilisateur a donné à l'IA pour d’abord récupérer les informations nécessaires à la réponse sur le web.</br></br> 
 - Il fait donc d’abord une requête au modèle pour trouver la formulation de recherche adaptée au prompt.</br></br>
 - L’utilise pour faire une recherche sur internet grâce à l’API SERPAPI (ou peut-être Brave si la première se révèle être trop limitante) pour récupérer l’url des 10 premiers sites qui apparaissent pour répondre à la recherche.</br></br>
-- Une fois les urls récupérées, le script fetch les contenu des 10 sites et les donne au modèles pour lui permettre d’affiner sa réponse.</br></br>
+- Une fois les urls récupérées, le script fetch le contenu des 10 sites et les donne au modèles pour lui permettre d’affiner sa réponse.</br></br>
 - Le modèle répond ensuite à l'utilisateur à partir des données fournies.</br>
 
 Ce script est invoqué si et seulement si l’utilisateur a coché l’option “rechercher sur le web”.
@@ -246,8 +246,8 @@ Fonctionnalités principales :
   La réponse générée est ensuite transmise normalement à l’utilisateur.
 
 ### Serveur
-Le serveur Web est un serveur Node.js qui pourra etre hébergé sur la plateforme de votre choix. Profitez donc de toutes les protections fournies la dite plateforme, en particulier la détection et prévention d’attaques de type DDoS.</br>
-Le serveur doit etre équipé d’un cœur virtuel, de 8GB de mémoire vive et de 64 GB de stockage en SSD pour pouvoir supporter des modeles d'IA performants.<br/>
+Le serveur Web est un serveur Node.js qui pourra être hébergé sur la plateforme de votre choix. Profitez donc de toutes les protections fournies par la dite plateforme, en particulier la détection et prévention d’attaques de type DDoS.</br>
+Le serveur doit être équipé d’un cœur virtuel, de 8GB de mémoire vive et de 64 GB de stockage en SSD pour pouvoir supporter des modeles d'IA performants.<br/>
 Pour simplifier son installation, la base de données tourne dans un conteneur Docker dans le serveur Web.<br/>
 
 ### Conclusion
@@ -257,9 +257,9 @@ Nous avons donc plusieurs parties:
 - l'Interface Web</br>
 - le Modèle</br>
 - le Serveur</br>
-- 2 scripts d’affinage du modèle; utilisant des langages différents mais interagissant pour former le Chatbot.</br>
+- 2 scripts d’affinage du modèle ; utilisant des langages différents mais interagissant pour former le Chatbot.</br>
 
-Nous avons cependant laissé une certaine flexibilité concernant certaines parties, notamment le serveur, pour permettre la mise en place de mesures contrant les différents problèmes qui peuvent etre rencontrés lors du développement.</br>
+Nous avons cependant laissé une certaine flexibilité concernant certaines parties, notamment le serveur, pour permettre la mise en place de mesures contrant les différents problèmes qui peuvent être rencontrés lors du développement.</br>
 Cependant, ce README suffit à  décrire le squelette de l'application, qui peut ensuite etre étoffé afin d'obtenir un Chatbot fonctionnel, sans la nécessité de modifications majeures du fonctionnement. Ainsi, dans le cas où il est nécessaire de repenser intégralement une partie du projet, cela ne devrait pas fortement impacter le reste du projet, de par la pseudo-indépendance des composants.
 
 
