@@ -1,0 +1,229 @@
+Info.gouv.fr RISQUES CYBER
+
+Conseils aux usagers
+Autoriser
+Bien choisir mon mot de passe
+Entrer un mot de passe permet de s’authentifier pour accéder à son ordinateur, sa tablette ou son téléphone portable, c’est un geste quotidien de sécurité.
+Choisir un mot de passe difficile est un rempart efficace pour protéger ses données personnelles contre les intrusions frauduleuses.
+Définir des mots de passe composés d'au moins 12 caractères :
+Qui contient majuscules, minuscules, chiffres et caractères spéciaux (*% !).
+Qui n’a aucun lien avec vous comme votre nom, date ou lieu de naissance.
+En pratique, 3 méthodes simples pour définir son mot de passe :
+La méthode phonétique : « J’ai acheté 5 CD pour cent euros cet après-midi » : ght5CD%E7am
+La méthode des premières lettres : « Un tiens vaut mieux que deux tu l’auras » : 1tvmQ2tl’A
+La phrase de passe : votre tortue s’appelle Georgette et vous habitez en Charente-Maritime. Utilisez VOILÀ_LA_TORTUE_DU17 plutôt que GEORGETTE.
+Recommandations supplémentaires : 
+Ne pas utiliser pas le même mot de passe pour tout. Un mot de passe = un compte.
+Pour me souvenir de l’ensemble de mes mots de passe, j’utilise un coffre-fort à mots de passe.
+Entretenir ses appareils numériques
+Mettre à jour régulièrement les logiciels de mes appareils numériques est essentiel. Dans chaque système d’exploitation (Android, MacOS, Linux, Windows,etc.), logiciel ou application, des mises à jour de sécurités ont proposées. Si elles ne sont pas faites régulièrement, les attaquants peuvent plus facilement mener à bien leurs opérations.
+Pour cela :
+Je configure mes logiciels pour que les mises à jour de sécurité s’installent automatiquement chaque fois que cela est possible.
+Je télécharge les correctifs de sécurité disponibles en utilisant uniquement les sites Internet officiels des éditeurs.
+Effectuer des sauvegardes régulières
+Sauvegarder quotidiennement ou hebdomadairement, permet, par exemple, de disposer de ses données après un dysfonctionnement ou une panne d’ordinateur.
+Pour cela :
+J’utilise des supports externes (disque dur externe, CD, DVD) pour enregistrer et sauvegarder mes données.
+Les sauvegardes doivent être déconnectées du système d’information pour prévenir leur chiffrement.
+Je range ces supports externes dans un lieu éloigné de mon ordinateur pour éviter que la destruction des données d’origine ne s’accompagne de la destruction de la copie de sauvegarde en cas d’incendie ou d’inondation ou que la copie de sauvegarde ne soit volée en même temps que l’ordinateur.
+J’évite d’effectuer des sauvegardes sur des plateformes « cloud » car elles peuvent être la cible de cyberattaques.
+Être prudent avec son smartphone, sa tablette
+Alexandre possède un smartphone. Au moment de l’installation d’une application, il n’a pas désactivé l’accès de l’application à ses données personnelles. Désormais, les éditeurs peuvent accéder à tous les SMS présents sur son téléphone.
+
+Les smartphones sont aujourd’hui très peu sécurisés. Il est donc indispensable d’appliquer certaines règles élémentaires d’hygiène informatique :
+j’installe uniquement des applications nécessaires et je vérifie à quelles données elles peuvent avoir accès avant de les télécharger (informations géographiques, contacts, appels téléphoniques…),
+certaines applications demandent l’accès à des données qui ne sont pas nécessaires à leur fonctionnement : il faut éviter de les installer.
+En plus du code PIN, j’utilise un schéma ou un mot de passe pour sécuriser l’accès à mon terminal et je configure mon téléphone pour qu’il se verrouille automatiquement.
+J’effectue des sauvegardes régulières de mes contenus sur un support externe pour pouvoir les retrouver en cas de panne de mon smartphone.
+Prendre soin de ses informations personnelles et de son identité numérique
+Les données que je laisse en ligne peuvent m’échapper instantanément. Des personnes malveillantes peuvent alors récolter mes informations personnelles, le plus souvent frauduleusement et à mon insu, afin de déduire mes mots de passe, d’accéder à mon système informatique, voire d’usurper mon identité.
+Une grande prudence est conseillée dans la diffusion de mes informations personnelles en ligne.
+Recommandations générales :
+je suis vigilant vis-à-vis des formulaires que je remplis : je transmets uniquement les informations strictement nécessaires et je décoche les cases qui autoriseraient le site à conserver ou à partager vos informations, par exemple avec des partenaires commerciaux,
+je ne donne accès qu’à un minimum d’informations personnelles sur les réseaux sociaux,
+j’utilise plusieurs adresses électroniques dédiées à mes différentes activités sur Internet : une pour les activités « sérieuses » (banques, recherches d’emploi, activité professionnelle…) et une pour les autres services en ligne (forums, jeux concours…).
+Sécuriser le wi-fi
+Si l’utilisation du wi-fi est une pratique attractive, elle permet, lorsque le point d’accès n’est pas sécurisé, à des personnes malintentionnées d’intercepter mes données et d’utiliser ma connexion wi-fi à mon insu pour réaliser des opérations malveillantes.
+L’accès à Internet par un point d’accès wi-fi est à éviter dans le cadre de l’entreprise.
+Je peux sécuriser mon accès wi-fi en configurant ma « box ». Pour cela, je contacte l’assistance technique de mon fournisseur d'accès.
+Recommandations générales :
+je modifie le nom d’utilisateur et le mot de passe par défaut (généralement « admin » et « 0000 ») de ma page de configuration accessible via votre navigateur Internet,
+je vérifie que ma « box » dispose du protocole de chiffrement WPA2 et je l’active. Sinon j’utilise la version précédente WPA-AES (ne jamais utiliser le chiffrement WEP cassable en quelques minutes),
+je modifie la clé de connexion par défaut avec une clé (mot de passe) de plus de 20 caractères de types différents,
+je divulgue ma clé de connexion seulement à des tiers de confiance et je la change régulièrement,
+j’active et je configure les fonctions pare-feu /routeur,
+je désactive le « wi-fi » de ma borne d’accès lorsqu’il n’est pas utilisé.
+Être prudent à l’ouverture de messages électronique
+À la suite de la réception d’un courriel semblant provenir d’un de ses amis, Madame Michel a cliqué sur un lien présent dans le message. Ce lien était piégé. Sans que Madame Michel le sache, son ordinateur est désormais utilisé pour envoyer des courriels malveillants diffusant des images pédopornographiques.
+
+Les courriels et leurs pièces jointes jouent souvent un rôle central dans la réalisation des cyberattaques (courriels frauduleux, pièces jointes piégées…).
+Lorsque je reçois des courriels, l'identité d’un expéditeur n’est en rien garantie :
+je vérifie la cohérence entre l’expéditeur présumé et le contenu du message,
+je n’ouvre pas les pièces jointes provenant de destinataires inconnus ou dont le titre ou le format paraissent incohérents avec les fichiers que m’envoient habituellement mes contacts,
+si un lien ou plusieurs figurent dans un courriel, je vérifie l’adresse du site en passant ma souris sur chaque lien avant de cliquer. Si j’ai un doute sur l’adresse affichée, je ne clique pas,
+je ne réponds jamais par courriel à une demande d’informations personnelles ou confidentielles (ex : code confidentiel et numéro de carte bancaire),
+je n’ouvre pas et je ne relais pas de messages de types chaînes de lettre, appels à la solidarité, alertes virales...
+Être vigilant pour ses achats en ligne
+Lorsque je réalise des achats en ligne, mes coordonnées bancaires sont susceptibles d’être interceptées par les attaquants.
+Ainsi, avant d’effectuer un paiement en ligne, je vérifie sur le site :
+la présence d’un cadenas dans la barre d’adresse ou en bas à droite de la fenêtre de votre navigateur (remarque : ce cadenas n’est pas visible sur tous les navigateurs),
+l’apparition de la mention « https:// » au début de l’adresse du site,
+l’exactitude de l’adresse du site Internet en prenant garde aux fautes d’orthographe par exemple,
+je privilégie la méthode impliquant l’envoi d’un code de confirmation de la commande par SMS,
+je ne transmets jamais le code confidentiel de ma carte bancaire.
+Séparer les usages personnels et professionnels
+Qu’est-ce que l’AVEC (ou BYOD) ?
+
+Monsieur Paul, directeur commercial, rapporte souvent du travail chez lui le soir. Sans qu’il s’en aperçoive son ordinateur personnel a été attaqué. Avec les informations qu’il contenait, l’attaquant a pu pénétrer le réseau interne de l’entreprise de Monsieur Paul. Des informations sensibles ont été volées puis revendues à la concurrence.
+
+Les usages et les mesures de sécurité sont différents sur les équipements de communication (ordinateur, smartphone,…) personnels et professionnels.
+Dans ce contexte, il est recommandé de séparer ses usages personnels de ses usages professionnels :
+Je ne fais pas suivre mes messages électroniques professionnels sur des services de messagerie utilisés à des fins personnelles.
+Je ne stocke pas de données professionnelles sur mes équipements de communication personnels.
+Protéger ses données pendants ses déplacements
+L’emploi d’ordinateurs portables, de smartphones ou de tablettes facilite le quotidien pour les des déplacements professionnels. Pourtant, voyager avec ces appareils nomades peut mettre en péril des informations sensibles sur l’organisation dans laquelle je travaille.
+Avant de partir en déplacement :
+j’utilise le matériel dédié à la mission prêté par mon entreprise (ordinateur, clefs USB, téléphone),
+je sauvegarde données sur un support amovible pour les retrouver en cas de perte,
+j’emporte un filtre de protection écran pour mon ordinateur,
+j’appose un signe distinctif (comme une pastille de couleur) sur mes appareils pour m'assurer qu’il n’y a pas eu d’échange pendant le transport.
+Pendant le déplacement :
+je garde mes appareils, supports et fichiers avec moi, pendant mon trajet comme pendant mon séjour (je ne les laisse pas dans un bureau ou un coffre d’hôtel),
+si je suis contraint de me séparer de mon téléphone, je retire la carte SIM et la batterie,
+en cas d’inspection ou de saisie de mon matériel par des autorités étrangères, j’informe mon organisation,
+je n’utilise pas les équipements que l’on m’offre si je ne peux pas les faire vérifier par un service de sécurité de confiance,
+j’évite de connecter mes équipements à des postes qui ne sont pas de confiance. Par exemple, si j’ai besoin d’échanger des documents à l'occasion d’une présentation.
+Télécharger des programmes, logiciels sur les sites officiels des éditeurs
+Si je télécharge du contenu numérique sur des sites Internet dont la confiance n’est pas assurée, je prends le risque d’enregistrer sur mon ordinateur des programmes ne pouvant être mis à jour, qui le plus souvent contiennent des virus ou des chevaux de Troie.
+Cela peut permettre à des personnes malveillantes de prendre le contrôle à distance de ma machine pour espionner les actions réalisées sur mon ordinateur, voler mes données personnelles, lancer des cyberattaques, etc.
+Il est vivement recommandé de télécharger des programmes sur les sites officiels des éditeurs.
+Je désactive l’ouverture automatique des documents téléchargés et lance une analyse antivirus avant de les ouvrir, afin de vérifier qu’ils ne sont pas infectés par un quelconque virus ou spyware.
+
+Cybercriminalité 
+Conseils aux usagers
+Attaque par rançongiciel (« ransomware »)
+Les rançongiciels sont des programmes informatiques malveillants de plus en plus répandus.
+L’objectif : chiffrer des données puis demander à leur propriétaire d'envoyer de l'argent en échange de la clé qui permettra de les déchiffrer.
+Le procédé
+S'en prémunir
+Infographie : Qu'est-ce qu'un rançongiciel, comment réagir et se protéger ?Agrandir le visuel
+Infographie : Qu'est-ce qu'un rançongiciel, comment réagir et se protéger ? -Source : ANSSI
+Transcription
+Agrandir
+RANÇONGICIEL
+Vos données sont prises en otage
+QUE SE PASSE-T-IL ?
+1. Vos données sont progressivement chiffrées, ce qui les rend inaccessibles
+
+2. L’infection peut s’étendre à tous les appareils connectés au réseau ou aux supports USB branchés.
+
+3. On exige de vous le paiement d’une rançon pour récupérer ces données.
+
+Impact de l’attaque : l’intégrité, la disponibilité et l’authenticité.
+
+Motivations principales des attaquants : appât du gain, et nuisance.
+
+COMMENT RÉAGIR ?
+Vous êtes victime d’un rançongiciel, ne payez pas !
+
+1 - Ne pas éteindre la machine concernée. La mettre en veille prolongée si possible.
+
+2 - Déconnectez immédiatement les appareils du réseau.
+
+3 - Ne connectez plus aucun appareil sur le réseau.
+
+4 - Contactez immédiatement votre service informatique ou un expert (ou trouvez le vôtre sur cybermalveillance.gouv.fr).
+
+5 - Portez plainte auprès des services compétents.
+
+COMMENT SE PROTÉGER ?
+Ne tombez pas dans le piège.
+
+- Effectuez des sauvegardes régulières de vos données
+- Mettez à jour régulièrement vos principaux logiciels, les rançongiciels utilisent les vulnérabilités des programmes pour se propager
+- Privilégiez un compte utilisateur pour vos usages courants
+- Courriers électroniques piégés : Ne faites pas confiance à l’expéditeur de courriers électroniques dont l’origine ou la forme vous semblent douteuses, et méfiez-vous des pièces jointes et des liens suspects.
+- En savoir plus sur les attaques par rançongiciel : rendez-vous sur www.ssi.gouv.fr/guide/attaques-par-rancongiciels-tous-concernescomment-les-anticiper-et-reagir-en-cas-dincident/ et sur cybermalveillance.gouv.fr/tous-nos-contenus/fiches-reflexes/rancongiciels-ransomwares
+Conseils aux usagers
+Attaque par rançongiciel (« ransomware »)
+Les rançongiciels sont des programmes informatiques malveillants de plus en plus répandus.
+L’objectif : chiffrer des données puis demander à leur propriétaire d'envoyer de l'argent en échange de la clé qui permettra de les déchiffrer.
+Le procédé
+S'en prémunir
+Infographie : Qu'est-ce qu'un rançongiciel, comment réagir et se protéger ?Agrandir le visuel
+Infographie : Qu'est-ce qu'un rançongiciel, comment réagir et se protéger ? -Source : ANSSI
+Transcription
+
+Conseils aux usagers
+Je suis victime d’un « ransomware » ou de « phishing »
+Je contacte cybermalveillance.gouv.fr
+Des services spécialisés se chargent ensuite de l'enquête :
+Police nationale :  l’office anti-cybercriminalité (OFAC).
+Gendarmerie nationale :  l'Unité Nationale Cyber (UNCyber). Echangez avec un gendarme par tchat 24/7
+Préfecture de police : la brigade de lutte contre la cybercriminalité compétente uniquement pour Paris et petite couronne (75, 92, 93 et 94) 
+
+
+
+Destabilisation : Les différents types d'attaques
+Attaque par déni de service (Distributed Denial of Service ou DDOS)
+Le déni de service peut porter atteinte à l’image de la victime et constitue une menace pour toute organisation disposant d’un système d’information en ligne. L’objectif : rendre le site, et donc le service attendu, indisponible.
+Les motivations des attaquants sont diverses, allant des revendications idéologiques à la vengeance, en passant par les extorsions de fonds.
+Le procédé
+S'en prémunir
+Infographie : Qu'est-ce qu'une attaque par déni de service distribué, comment réagir et se protéger ?&nbsp;Agrandir le visuel
+Infographie : Qu'est-ce qu'une attaque par déni de service distribué, comment réagir et se protéger ?&nbsp; -Source : ANSSI
+Transcription
+Conseils aux usagers
+Attaque par « défiguration » (« defacement »)
+Généralement revendiqué par des hacktivistes, ce type d’attaque peut être réalisé à des fins politiques ou idéologiques, ou à des fins de défi technique (défis entre attaquants).
+L’objectif : modifier l’apparence ou le contenu d’un site, et donc altérer l’intégrité des pages.
+Le procédé
+S'en prémunir
+Conseils aux usagers
+Je suis victime d’attaque à des fins de déstabilisation 
+Je contacte cybermalveillance.gouv.fr
+Je notifie l’attaque à mes équipes informatiques, mon prestataire, pour qu’ils puissent, si je ne peux pas le faire directement :
+Garder des traces de l’attaque : copie de l'état altéré du site (ou du serveur, si l'environnement n'est pas mutualisé), des  équipements environnants (pare-feux, serveurs mandataires, etc.) et des journaux d'accès au site, et ceux de tous les services permettant de modifier le site à distance.
+Rechercher d’autres intrusions opérées suite à l’exposition du site à une attaque.
+Reconstruire le site uniquement après l’identification et la correction de la vulnérabilité utilisée par l'attaquant pour altérer le site. La simple restauration du site dans un état « sain » ne bloquera pas la faille utilisée par l'attaquant, qui pourra rapidement l'altérer à nouveau.  
+Des services spécialisés se chargent ensuite de l'enquête :
+Police nationale : l’Office central de lutte contre la criminalité liée aux technologies de l’information et de la communication (OCLCTIC) qui dépend de la Sous-direction de lutte contre la cybercriminalité (SDLC)
+ Gendarmerie nationale : le centre de lutte contre les criminalités numériques (C3N) du Service Central du Renseignement Criminel (SCRC) : cyber@gendarmerie.interieur.gouv.fr
+Préfecture de police : la brigade de lutte contre la cybercriminalité (BL2C) compétente uniquement pour Paris et petite couronne (75, 92, 93 et 94) :
+
+
+Sabotage : 
+Le sabotage informatique est le fait de rendre inopérant une partie ou l’entièreté d’un système d’information d’une organisation via une cyberattaque. Il s’apparente à une « panne organisée », frappant tout ou partie des systèmes selon le type d’atteinte recherchée. Pour y parvenir, les moyens d’attaques sont nombreux.
+Le sabotage et la destruction de systèmes informatiques peuvent avoir des conséquences dramatiques sur l'économie d'une organisation, sur la vie des personnes, voire sur le bon fonctionnement de la Nation s’ils touchent des secteurs d’activité clés.
+Pour m'en prémunir :
+J’effectue des sauvegardes régulières.
+J’utilise des mots de passe d'accès aux interfaces d'administration complexes et régulièrement renouvelés.
+J’applique les correctifs de sécurité régulièrement.
+
+Espionnage :
+Très ciblées et sophistiquées, les attaques à des fins d’espionnage (économiques, scientifiques ou politiques) sont souvent le fait de groupes structurés et peuvent avoir de lourdes conséquences pour les intérêts nationaux.
+Il faut parfois des années à une organisation pour s’apercevoir qu’elle a été victime d’espionnage, car l’objectif de l’attaquant est de maintenir discrètement et le plus longtemps possible son accès pour capter l’information stratégique en temps voulu.
+Les différents types d'attaques
+Ces attaques aux modes opératoires variés touchent régulièrement des institutions et industriels œuvrant dans des secteurs sensibles.
+Attaque par point d’eau (watering hole)
+Cette technique consiste à piéger un site en ligne légitime afin d’infecter les équipements des visiteurs du secteur d’activité visé par l’attaquant.
+Objectif : infiltrer discrètement les ordinateurs de personnels œuvrant dans un secteur d’activité ou une organisation ciblée pour récupérer des données.
+Le procédé
+Se prémunir
+Conseils aux usagers
+Attaque par hameçonnage ciblé (spearphishing)
+Cette attaque repose généralement sur une usurpation de l’identité de l’expéditeur, et procède par ingénierie sociale forte afin de lier l’objet du courriel et le corps du message à l’activité de la personne ou de l’organisation ciblée.
+Objectif : infiltrer le système d’information d’une organisation d’un secteur d’activité ciblé.
+Le procédé
+S'en prémunir
+Conseils aux usagers
+Je suis victime d’espionnage
+Je contacte cybermalveillance.gouv.fr
+Je notifie l’attaque à mes équipes informatiques ou mon prestataire pour qu’ils puissent, si je ne peux pas le faire directement :
+Garder des traces de l’attaque : copie de l'état infecté du site Web (ou du serveur, si l'environnement n'est pas mutualisé), des équipements environnants (pare-feu, serveurs mandataires, etc.) et des journaux d'accès au site, et ceux de tous les services permettant de modifier le site à distance.
+Rechercher d’autres intrusions opérées suite à l’exposition du site à une attaque.
+Reconstruire le site uniquement après l’identification et la correction de la vulnérabilité utilisée par l'attaquant pour agir sur le site. La simple restauration du site dans un état « sain » ne bloquera pas la faille utilisée par l'attaquant, qui pourra rapidement agir sur le site à nouveau.  
+ Des services spécialisés se chargent ensuite de l'enquête :
+Police nationale : l’Office central de lutte contre la criminalité liée aux technologies de l’information et de la communication (OCLCTIC) qui dépend de la Sous-direction de lutte contre la cybercriminalité (SDLC)
+ Gendarmerie nationale : le centre de lutte contre les criminalités numériques (C3N) du Service central du renseignement criminel (SCRC) : cyber@gendarmerie.interieur.gouv.fr
+Préfecture de police : la brigade de lutte contre la cybercriminalité (BL2C) compétente uniquement pour Paris et petite couronne (75, 92, 93 et 94).

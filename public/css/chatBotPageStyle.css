@@ -1,0 +1,815 @@
+/* RESET ET BASE */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* Désactiver le carré bleu sur mobile */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Désactiver spécifiquement pour les boutons et éléments interactifs */
+button, svg, a, [onclick] {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    outline: none !important;
+    -webkit-focus-ring-color: transparent !important;
+}
+
+/* Pour les input, garder la sélection de texte mais supprimer le highlight */
+input, textarea {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+body {
+    font-family: 'Montserrat';
+    background-color: #1a1a1a;
+    color: #e3e3e3;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+
+/* SIDEBAR */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background-color: #2a2a2a;
+    border-right: 1px solid #404040;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+    transition: width 0.3s ease, min-width 0.3s ease; /* Ajout de la transition */
+}
+
+.sidebar.retracted {
+    width: 80px;
+    min-width: 80px;
+}
+
+/* En-tête de la sidebar */
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.retract-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    width: 40px;
+    height: 40px;
+    align-self: flex-start;
+}
+
+.retract-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.retract-button svg {
+    transition: transform 0.3s ease;
+}
+
+.sidebar.retracted .retract-button svg {
+    transform: scaleX(-1);
+}
+
+/* Toggle Internet */
+.internet-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #ff6b6b, #ffa500);
+    border-radius: 25px;
+    color: white;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.internet-toggle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39));
+}
+
+.internet-toggle-left {
+    display: flex;
+    align-items: center;
+}
+
+.internet-toggle svg {
+    margin-right: 9px;
+    margin-left: -5px;
+    fill: white;
+}
+
+.internet-toggle input[type="checkbox"] {
+    width: 40px;
+    height: 20px;
+    appearance: none;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.internet-toggle input[type="checkbox"]:checked {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.internet-toggle input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+}
+
+.internet-toggle input[type="checkbox"]:checked::before {
+    transform: translateX(20px);
+}
+
+/* Bouton nouveau chat */
+.new-chat-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #ff6b6b, #ffa500);
+    border-radius: 25px;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    font-size: 15px;
+    transform: scale(1);
+    transition: all 0.3s ease;
+}
+
+.new-chat-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg,rgb(255, 109, 109),rgb(255, 176, 39));
+}
+
+.new-chat-btn:active {
+    transform: scale(0.98); 
+    transition: all 0.1s ease; 
+}
+
+.new-chat-btn svg {
+    margin-right: 8px;
+    fill: white;
+}
+        
+
+/* Séparateur */
+hr {
+    border: none;
+    height: 1px;
+    background-color: #404040;
+    margin: 20px 0;
+}
+
+/* Section conversations */
+
+/* Wrapper pour chaque conversation avec bouton de suppression */
+.conversation-item-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden; /* Empêche le débordement */
+}
+
+.conversation-item-wrapper:hover {
+    background-color: #363636;
+}
+
+.conversation-item-wrapper.active {
+    background-color: #404040;
+}
+
+/* Mise à jour du style des items de conversation */
+.conversation-item {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    padding: 12px 16px;
+    padding-right: 70px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    margin-bottom: 0;
+    width: 100%;
+    min-width: 0; /* Permet la réduction */
+}
+
+/* Bouton d'édition */
+.edit-conversation-btn {
+    position: absolute;
+    right: 36px; /* Positionné à gauche du bouton de suppression */
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    z-index: 10;
+}
+
+
+.conversation-item-wrapper:hover .edit-conversation-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
+.edit-conversation-btn:hover {
+    background-color: rgba(255, 136, 50, 0.2);
+}
+
+.edit-conversation-btn:hover svg {
+    fill: #FF8A32;
+}
+
+.edit-conversation-btn svg {
+    transition: fill 0.2s ease;
+    width: 14px;
+    height: 14px;
+}
+
+.conversation-item-wrapper:hover .conversation-item {
+    background: none;
+    color: #e3e3e3;
+}
+
+.conversation-item-wrapper.active .conversation-item {
+    background: none;
+    color: #e3e3e3;
+}
+
+.conversation-title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%; /* Utilise toute la largeur disponible */
+    max-width: none; /* Supprime la limite fixe */
+}
+
+/* Bouton de suppression */
+.delete-conversation-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    z-index: 10;
+}
+
+.conversation-item-wrapper:hover .delete-conversation-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
+.delete-conversation-btn:hover {
+    background-color: rgba(255, 107, 107, 0.2);
+}
+
+.delete-conversation-btn:hover svg {
+    fill: #ff6b6b;
+}
+
+.delete-conversation-btn svg {
+    transition: fill 0.2s ease;
+    width: 14px;
+    height: 14px;
+}
+
+.conversation-list{
+    margin-top: 10px;;
+}
+
+
+/* Message de bienvenue */
+.welcome-message {
+    background: linear-gradient(135deg, #ff6b6b, #ffa500) !important;
+    color: white !important;
+    border: none !important;
+    text-align: center;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-width: 600px !important; /* Augmentation de 450px à 600px */
+    width: auto !important;
+    margin: 0 !important;
+    z-index: 1;
+    padding: 20px 40px !important; 
+    border-radius: 25px !important; 
+    font-size: 25px !important; 
+}
+
+.welcome-message p {
+    margin: 0;
+    font-size: 25px; 
+}
+
+
+
+/* Container pour les messages avec le message de bienvenue centré */
+.messages-container.has-welcome {
+    position: relative;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Animation de rétraction */
+.sidebar.retracted .sidebar-header .internet-toggle,
+.sidebar.retracted .sidebar-header .new-chat-btn,
+.sidebar.retracted hr,
+.sidebar.retracted .conversations-section {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-20px);
+}
+
+/* ZONE DE CHAT PRINCIPALE */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #1a1a1a;
+    height: 100dvh;
+    min-width: 0;
+}
+
+.chat-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.chat-header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #e3e3e3;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-left img {
+    height: 100px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.header-center img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+
+.header-right svg {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    height: 40px;
+    width: 40px;
+    transform: scale(1);
+    transition: all 0.3s ease;
+}
+
+.header-right svg:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+
+/* Conteneur des messages */
+.messages-container {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+}
+
+.message {
+    max-width: 80%;
+    padding: 16px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.user-message {
+    background-color: #363636;
+    color: #e3e3e3;
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+    margin-left: auto;
+}
+
+.bot-message {
+    background-color: #2a2a2a;
+    color: #e3e3e3;
+    align-self: flex-start;
+    border-bottom-left-radius: 6px;
+    border: 1px solid #404040;
+}
+
+.message p {
+    margin: 0;
+}
+
+/* ZONE DE SAISIE */
+.input-area {
+    padding: 20px 30px;
+    border-top: 1px solid #333;
+    background-color: #1a1a1a;
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #2a2a2a;
+    border: 1px solid #404040;
+    border-radius: 25px;
+    padding: 0;
+    transition: border-color 0.3s ease;
+}
+
+.input-container:focus-within {
+    /* border-color: #C96F25; */
+    border-color: transparent;
+}   
+
+#message-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e3e3e3;
+    font-size: 14px;
+    padding: 12px 20px;
+    padding-right: 50px;
+}
+
+#message-input::placeholder {
+    color: #888;
+}
+
+#send-btn {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+}
+
+#send-btn:hover:not(:disabled) {
+    /* background: #C96F25; */
+    /* color: #C96F25; */
+    transform: scale(1.2);
+}
+
+#send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#send-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* SCROLLBARS */
+/* SCROLLBARS */
+.conversation-list::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.conversation-list::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.conversation-list::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb {
+    background-color: #404040;
+    border-radius: 3px;
+}
+
+.conversation-list::-webkit-scrollbar-thumb:hover,
+.messages-container::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+
+/* Masquer les éléments mobiles par défaut */
+.mobile-only {
+    display: none !important;
+}
+
+/* Header desktop (par défaut) */
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 30px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
+}
+
+.desktop-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.desktop-header img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.desktop-header h1 {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-right {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.header-right:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    /* Afficher les éléments mobiles */
+    .mobile-only {
+        display: flex !important;
+    }
+    
+    /* Masquer les éléments desktop */
+    .desktop-header {
+        display: none !important;
+    }
+    
+    .container {
+        position: relative;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        min-width: 280px;
+        height: 100dvh;
+        z-index: 1000;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        transition: left 0.3s ease;
+    }
+    
+    .sidebar.mobile-open {
+        left: 0;
+    }
+    
+    .chat-area {
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .chat-header {
+        padding: 15px 20px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .header-left {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .header-center {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .header-center img {
+        height: 28px;
+        width: auto;
+        object-fit: contain;
+        margin-bottom: 8px;
+    }
+    
+    .header-center h1 {
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .header-right {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .mobile-menu-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .mobile-menu-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .mobile-menu-btn svg {
+        fill: #e3e3e3;
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* Overlay pour fermer la sidebar en cliquant à côté */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100dvh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+      .messages-container {
+        padding: 15px;
+        flex: none; 
+        overflow-y: auto;
+        height: calc(100dvh - 147.5px);
+        padding-bottom: 15px;
+    }
+    
+    .input-area {
+        padding: 15px;
+        background-color: #1a1a1a;
+        border-top: 1px solid #333;
+        height: 80px; /* Hauteur fixe pour la zone d'input */
+    }
+    
+    .message {
+        max-width: 95%;
+        font-size: 13px;
+    }
+    
+    .chat-header h1 {
+        font-size: 20px;
+    }
+
+    .welcome-message {
+        padding: 10px 21px !important; 
+    }
+
+    .welcome-message p {
+        font-size: 20px; 
+    }
+
+    .edit-conversation-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .delete-conversation-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+}

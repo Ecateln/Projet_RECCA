@@ -35,5 +35,6 @@ export async function run(io, socket, token) {
     socket.emit(
         'login_success',
         socket.user_data.conversations.map(({ id, title }) => ({ id, title })),
+        { username: socket.user_data.username, personalization_info: socket.user_data.personalization_info },
     );
 }

@@ -1,0 +1,8 @@
+Confidentialité
+	Seules les personnes autorisées ont accès au données 
+Disponibilité
+	Les données sont accessibles rapidement et régulièrement
+Intégrité
+	L’assurance que les données consultées n’ont pas été modifiées
+Traçabilité
+	Les accès aux données sont conservés et exploitables

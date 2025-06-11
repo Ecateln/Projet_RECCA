@@ -10,18 +10,6 @@ import { readdirSync } from 'fs';
 
 await initializeDatabase();
 
-// import { askAgent } from './util/functions.js';
-// const msgs = [];
-// async function askAndPrint(prompt) {
-//     process.stdout.write(`\x1b[32m> ${prompt}\n\x1b[0m`);
-//     for await (const tok of askAgent(prompt, msgs)) process.stdout.write(tok);
-//     process.stdout.write("\n");
-// }
-// await askAndPrint("Bonjour, je m'appelle Barbara.");
-// await askAndPrint("Où est la France?");
-// await askAndPrint("Merci! Je suis prise d'amnésie.... saurais-tu me dire qui je suis?");
-// process.exit();
-
 const app = express();
 const server = createServer(app);
 const socket_server = new Server(server);
@@ -87,7 +75,7 @@ socket_server.on('connection', (socket) => {
     });
 });
 
-app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "temp_chat.html")));
+app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "chatBotPage.html")));
 app.get('/login', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "loginPage.html")));
 app.get('/register', (req, res) => res.sendFile(path.join(process.cwd(), "public", "html", "registerPage.html")));
 app.get('/logout', (req, res) => res.clearCookie('token').redirect('/login'));
@@ -124,16 +112,14 @@ app.post('/login', async (req, res) => {
     const body = req.body;
     if (!body || typeof body.username !== 'string' || typeof body.password !== 'string')
         return res.status(400)
-            .send('Invalid request body')
-            .end();
+            .send('Invalid request body');
 
     const user_data = await getUserByUsername(body.username);
     const pass_ok = verifyPassword(body.password, user_data?.password_hash ?? '');
 
     if (!user_data || !pass_ok)
         return res.status(400)
-            .json({ error: 'Nom d\'utilisateur ou mot de passe incorrect.' })
-            .end();
+            .json({ error: 'Nom d\'utilisateur ou mot de passe incorrect.' });
 
     console.log('User logged in:', user_data.username);
 
@@ -144,15 +130,13 @@ app.post('/login', async (req, res) => {
 
     if (!token_data)
         return res.status(500)
-            .json({ error: 'Erreur lors de la création du token, veuillez réessayer plus tard.' })
-            .end();
+            .json({ error: 'Erreur lors de la création du token, veuillez réessayer plus tard.' });
 
     res.status(200)
         .json({
             token: token_data.value,
             expires_at: token_data.expires_at,
-        })
-        .end();
+        });
 });
 
 app.all(/(.*)/, (req, res) => res.redirect("https://youtu.be/dQw4w9WgXcQ"));
