@@ -1,5 +1,6 @@
 import { updateUser, isUsernameFree, getUserById } from '../util/database.js';
 import { hashPassword, validatePasswordFormat, validateUsernameFormat, verifyPassword } from '../util/functions.js';
+import { db } from '../util/globals.js';
 
 export const name = "user_update";
 export const cooldown = 5000;
@@ -60,6 +61,9 @@ export async function run(io, socket, updates) {
         if (!updatedUserId) {
             return socket.emit("error", { error: "Une erreur est survenue lors de la mise à jour des informations utilisateur." });
         }
+        else {
+            socket.user_data
+        }
 
         // Prepare response data (excluding sensitive information)
         const responseData = {
@@ -69,8 +73,15 @@ export async function run(io, socket, updates) {
         };
 
         // Include updated fields in response (excluding password)
-        if (username) responseData.username = username;
-        if (personalization_info) responseData.personalization_info = personalization_info;
+        if (username) {
+            responseData.username = username;
+            socket.user_data.username = username;
+        }
+        if (password) socket.user_data.password_hash = dbUpdates.password_hash;
+        if (personalization_info) {
+            responseData.personalization_info = personalization_info;
+            socket.user_data.personalization_info = personalization_info;
+        }
 
         socket.emit("user_updated", responseData);
     } catch (error) {

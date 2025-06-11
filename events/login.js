@@ -20,7 +20,6 @@ export async function run(io, socket, token) {
         return;
     }
 
-    // TODO: update user_data on user_update
     socket.user_data = {
         ...user_data,
         conversations: conversations.map(c => ({
