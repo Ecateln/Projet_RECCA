@@ -360,14 +360,22 @@ function sendMessage() {
 
 
 
-// Fonction pour ajouter un message à l'interface
 function addMessageToUI(message, type) {
     const messagesContainer = document.querySelector('.messages-container');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;
-    messageDiv.innerHTML = `<p>${message}</p>`;
+    
+    if (type === 'bot') {
+        // Convertir le markdown en HTML pour les messages bot
+        messageDiv.innerHTML = `<div>${marked.parse(message)}</div>`;
+    } else {
+        // Garder le format simple pour les messages utilisateur
+        messageDiv.innerHTML = `<p>${message}</p>`;
+    }
+    
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
 }
 
 // Fonction pour faire défiler vers le bas
@@ -814,7 +822,7 @@ function loadConversationMessages(conversation) {
         
         // Charger tous les messages de la conversation
         conversation.messages.forEach(message => {
-            addMessageToUI(message.content, message.type, false);
+            addMessageToUI(message.content, message.type);
         });
     }
     
