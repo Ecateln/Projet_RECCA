@@ -793,4 +793,12 @@ hr {
     .chat-header h1 {
         font-size: 20px;
     }
+
+    .welcome-message {
+        padding: 10px 21px !important; 
+    }
+
+    .welcome-message p {
+        font-size: 20px; 
+    }
 }

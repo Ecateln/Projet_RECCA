@@ -6,6 +6,139 @@ let sidebarRetracted = false;
 let internetResearch = false;
 let conversations = [];
 let conversationCounter = 1;
+let currentNotification = null; 
+let currentPopupClose = null; // Stockage de la fonction de fermeture de la popup
+
+/* Fonction uniquement Front End */
+// Fonction pour basculer l'état de la sidebar
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+
+    if( sidebar.classList.contains('mobile-open')) {
+        // Si la sidebar est ouverte en mode mobile, on la ferme
+        closeMobileSidebar();
+        return;
+    }
+
+     sidebarRetracted = !sidebarRetracted;
+    
+    if (sidebarRetracted) {
+        sidebar.classList.add('retracted');
+    } else {
+        sidebar.classList.remove('retracted');
+    }
+    
+    // Sauvegarder l'état dans le localStorage si disponible
+    try {
+        localStorage.setItem('sidebarRetracted', sidebarRetracted.toString());
+    } catch (e) {
+        // Ignore si localStorage n'est pas disponible
+    }
+}
+
+// Fonction pour basculer la recherche sur Internet
+function toggleInternetResearch() {
+    internetResearch = !internetResearch;
+    console.log('Internet Research:', internetResearch);
+}
+
+// Restaurer l'état de la sidebar au chargement
+function restoreSidebarState() {
+    try {
+        const saved = localStorage.getItem('sidebarRetracted');
+        if (saved === 'true') {
+            sidebarRetracted = true;
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('retracted');
+        }
+    } catch (e) {
+        // Ignore si localStorage n'est pas disponible
+    }
+}
+
+// Fonction pour ajouter un message à l'interface
+function addMessageToUI(message, type) {
+    const messagesContainer = document.querySelector('.messages-container');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    
+    if (type === 'bot') {
+        // Convertir le markdown en HTML pour les messages bot
+        messageDiv.innerHTML = `<div>${marked.parse(message)}</div>`;
+    } else {
+        // Garder le format simple pour les messages utilisateur
+        messageDiv.innerHTML = `<p>${message}</p>`;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+}
+
+// Fonction pour faire défiler vers le bas
+function scrollToBottom() {
+    const messagesContainer = document.querySelector('.messages-container');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+// Fonction pour afficher le message de bienvenue
+function showWelcomeMessage() {
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    // Ajouter la classe pour le centrage
+    messagesContainer.classList.add('has-welcome');
+    
+    // Créer le message de bienvenue
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'message bot-message welcome-message';
+    welcomeDiv.id = 'welcome-message';
+    welcomeDiv.innerHTML = `<p>Bonjour Coco </p>`;
+    
+    messagesContainer.appendChild(welcomeDiv);
+}
+
+// Fonction pour supprimer le message de bienvenue
+function removeWelcomeMessage() {
+    const welcomeMessage = document.getElementById('welcome-message');
+    const messagesContainer = document.querySelector('.messages-container');
+    
+    if (welcomeMessage) {
+        welcomeMessage.remove();
+        // Supprimer la classe de centrage
+        messagesContainer.classList.remove('has-welcome');
+    }
+    
+    // Marquer définitivement la conversation comme n'ayant plus le message de bienvenue
+    const activeConversation = conversations.find(conv => conv.id === currentConversation);
+    if (activeConversation) {
+        activeConversation.hasWelcomeMessage = false;
+    }
+}
+
+// Fonction pour ouvrir la sidebar mobile
+function openMobileSidebar() {
+    sidebarRetracted = true;
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+}
+
+// Fonction pour fermer la sidebar en mode mobile
+function closeMobileSidebar() {
+
+    sidebarRetracted = false;
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.mobile-overlay');
+    
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+}
 
 // Fonction pour créer la popup des paramètres utilisateur
 function createUserSettingsPopup() {
@@ -242,6 +375,8 @@ function createUserSettingsPopup() {
         }, 250);
     }
 
+    currentPopupClose = closePopup; 
+
     // Assembler la popup
     popup.appendChild(closeButton);
     popup.appendChild(header);
@@ -275,49 +410,275 @@ function createUserSettingsPopup() {
     }, 10);
 }
 
-// Fonction pour basculer l'état de la sidebar
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
+// Function to show the success notification
+function showSuccessNotification() {
+    // Remove the current notification if it exists
+    if (currentNotification && document.body.contains(currentNotification)) {
+        document.body.removeChild(currentNotification);
+        currentNotification = null;
+    }
 
-    if( sidebar.classList.contains('mobile-open')) {
-        // Si la sidebar est ouverte en mode mobile, on la ferme
-        closeMobileSidebar();
+    // Create notification container
+    const notification = document.createElement('div');
+    notification.className = 'success-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: -100px;
+        left: 20px;
+        background-color: #2a2a2a;
+        border-left: 4px solid rgb(92, 255, 63);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-right: 20px;
+        max-width: 400px;
+        width: auto;
+        color: white;
+        font-family: Montserrat, sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    `;
+
+    // Set current notification reference
+    currentNotification = notification;
+
+    // Create message content
+    const messageElement = document.createElement('span');
+    messageElement.style.cssText = `
+        font-size: 0.95em;
+        color: white;
+        margin-right: 15px;
+        line-height: 1.3;
+    `;
+    messageElement.textContent = "Vos informations ont été modifiées avec succès !";
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.cssText = `
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5em;
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    `;
+
+    // Assemble notification
+    notification.appendChild(messageElement);
+    notification.appendChild(closeButton);
+
+    // Close function with slide-up animation
+    function closeNotification() {
+        if (notification && document.body.contains(notification)) {
+            notification.style.top = '-100px';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+                // Reset current notification reference
+                if (currentNotification === notification) {
+                    currentNotification = null;
+                }
+            }, 400);
+        }
+    }
+
+    // Add event listeners
+    closeButton.addEventListener('click', closeNotification);
+    closeButton.addEventListener('mouseenter', () => {
+        closeButton.style.transform = 'scale(1.1)';
+    });
+    closeButton.addEventListener('mouseleave', () => {
+        closeButton.style.transform = 'scale(1)';
+    });
+
+    // Auto-close after 5 seconds
+    const autoCloseTimeout = setTimeout(closeNotification, 5000);
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Trigger slide-down animation
+    setTimeout(() => {
+        if (notification && document.body.contains(notification)) {
+            notification.style.top = '20px';
+            notification.style.opacity = '1';
+        }
+    }, 10);
+}
+
+// Function to create an error notification
+function createErrorNotification(message = "Une erreur est survenue") {
+    // Remove the current notification if it exists
+    if (currentNotification && document.body.contains(currentNotification)) {
+        document.body.removeChild(currentNotification);
+        currentNotification = null;
+    }
+
+    // Create notification container
+    const notification = document.createElement('div');
+    notification.className = 'error-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: -100px;
+        left: 20px;
+        background-color: #2a2a2a;
+        border-left: 4px solid #FF4C4C;
+        border-radius: 8px;
+        padding: 15px 20px;
+        max-width: 400px;
+        width: auto;
+        color: white;
+        font-family: Montserrat, sans-serif;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    `;
+
+    // Set current notification reference
+    currentNotification = notification;
+
+    // Create message content
+    const messageElement = document.createElement('span');
+    messageElement.style.cssText = `
+        font-size: 0.95em;
+        color: #FF4C4C;
+        margin-right: 15px;
+        line-height: 1.3;
+    `;
+    messageElement.textContent = message;
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.cssText = `
+        background: none;
+        border: none;
+        color: #FF4C4C;
+        font-size: 1.5em;
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+    `;
+
+    // Assemble notification
+    notification.appendChild(messageElement);
+    notification.appendChild(closeButton);
+
+    // Close function with slide-up animation
+    function closeNotification() {
+        if (notification && document.body.contains(notification)) {
+            notification.style.top = '-100px';
+            notification.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+                // Reset current notification reference
+                if (currentNotification === notification) {
+                    currentNotification = null;
+                }
+            }, 400);
+        }
+    }
+
+    // Add event listeners
+    closeButton.addEventListener('click', closeNotification);
+    closeButton.addEventListener('mouseenter', () => {
+        closeButton.style.transform = 'scale(1.1)';
+    });
+    closeButton.addEventListener('mouseleave', () => {
+        closeButton.style.transform = 'scale(1)';
+    });
+
+    // Auto-close after 5 seconds
+    const autoCloseTimeout = setTimeout(closeNotification, 5000);
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Trigger slide-down animation
+    setTimeout(() => {
+        if (notification && document.body.contains(notification)) {
+            notification.style.top = '20px';
+            notification.style.opacity = '1';
+        }
+    }, 10);
+}
+
+// ------------------------------------------------------------
+/* */
+
+// Fonction pour sauvegarder les paramètres utilisateur
+function saveUserSettings() {
+    const usernameInput = document.querySelector('.popup-container input[type="text"]').value;
+    const currentPasswordInput = document.querySelector('.popup-container input[type="password"]:nth-child(2)').value;
+    const newPasswordInput = document.querySelector('.popup-container input[type="password"]:nth-child(3)').value;
+    const confirmPasswordInput = document.querySelector('.popup-container input[type="password"]:nth-child(4)').value;
+    const customAIInput = document.querySelector('.popup-container textarea').value;
+
+    // Vérification des champs
+    // Vérification qu'au moins un des champs est remplis
+    if (!usernameInput && !currentPasswordInput && !newPasswordInput && !confirmPasswordInput && !customAIInput) {
+        createErrorNotification("Veuillez remplir au moins un champ pour sauvegarder les paramètres.");
+        return;
+    }
+    else if (!usernameInput || usernameInput.length < 2 || usernameInput.length > 32) {
+        createErrorNotification("Le nom d'utilisateur doit contenir entre 2 et 32 caractères.");
+        return;
+    }
+    // TODO: CLEMENT FAUT CHECK AVEC LE VRAI
+    else if (false) {
+        createErrorNotification("Le mot de passe actuel doit contenir entre 12 et 64 caractères.");
+        return;
+    }
+    else if (newPasswordInput && (newPasswordInput.length < 12 || newPasswordInput.length > 64)) {
+        createErrorNotification("Le nouveau mot de passe doit contenir entre 12 et 64 caractères.");
+        return;
+    }
+    else if (newPasswordInput !== confirmPasswordInput) {
+        createErrorNotification("Les nouveaux mots de passe ne correspondent pas.");
+        return;
+    }
+    else if (customAIInput.length > 1000) {
+        createErrorNotification("La personnalisation de l'IA ne doit pas dépasser 1000 caractères.");
         return;
     }
 
-     sidebarRetracted = !sidebarRetracted;
-    
-    if (sidebarRetracted) {
-        sidebar.classList.add('retracted');
-    } else {
-        sidebar.classList.remove('retracted');
-    }
-    
-    // Sauvegarder l'état dans le localStorage si disponible
-    try {
-        localStorage.setItem('sidebarRetracted', sidebarRetracted.toString());
-    } catch (e) {
-        // Ignore si localStorage n'est pas disponible
-    }
-}
+    else{
+        // TODO: CLEMENT FAUT SAUVEGARDER
 
-// Fonction pour basculer la recherche sur Internet
-function toggleInternetResearch() {
-    internetResearch = !internetResearch;
-    console.log('Internet Research:', internetResearch);
-}
-
-// Restaurer l'état de la sidebar au chargement
-function restoreSidebarState() {
-    try {
-        const saved = localStorage.getItem('sidebarRetracted');
-        if (saved === 'true') {
-            sidebarRetracted = true;
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.add('retracted');
+        // Fermer la popup avec la fonction globale
+        if (currentPopupClose) {
+            currentPopupClose();
+            currentPopupClose = null; 
         }
-    } catch (e) {
-        // Ignore si localStorage n'est pas disponible
+
+        // Affichage pop up réussite
+        showSuccessNotification();
     }
 }
 
@@ -333,45 +694,11 @@ function sendMessage() {
         // Ajouter le message à l'interface
         addMessageToUI(message, 'user');
         input.value = '';
+        addMessageToUI("**POV**: *Coco* dort encore...", 'bot');
         
         // Ici vous pourrez ajouter l'envoi via socket plus tard
-        console.log('Message envoyé:', message);
+        console.log('Message envoyé:', message);        
     }
-}
-
-// Fonction pour ajouter un message à l'interface
-function addMessageToUI(message, type) {
-    const messagesContainer = document.querySelector('.messages-container');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}-message`;
-    messageDiv.innerHTML = `<p>${message}</p>`;
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// Fonction pour faire défiler vers le bas
-function scrollToBottom() {
-    const messagesContainer = document.querySelector('.messages-container');
-    if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-}
-
-// Fonction pour ajouter un message du bot
-function addBotMessage(markdownText) {
-    const messagesContainer = document.querySelector('.messages-container');
-    const botMessageDiv = document.createElement('div');
-    botMessageDiv.className = 'message bot-message';
-    // Convertir le markdown en HTML
-    botMessageDiv.innerHTML = `<p>${marked.parse(markdownText)}</p>`;
-    messagesContainer.appendChild(botMessageDiv);
-}
-
-// Mise à jour de l'interface
-function updateUI() {
-    console.log('UI updated');
-    // Faire défiler vers le bas à chaque mise à jour de l'UI
-    scrollToBottom();
 }
 
 // Fonction pour créer une nouvelle conversation
@@ -407,40 +734,6 @@ function createNewConversation() {
     console.log('Nouvelle conversation créée:', newConversation);
 }
 
-// Fonction pour afficher le message de bienvenue
-function showWelcomeMessage() {
-    const messagesContainer = document.querySelector('.messages-container');
-    
-    // Ajouter la classe pour le centrage
-    messagesContainer.classList.add('has-welcome');
-    
-    // Créer le message de bienvenue
-    const welcomeDiv = document.createElement('div');
-    welcomeDiv.className = 'message bot-message welcome-message';
-    welcomeDiv.id = 'welcome-message';
-    welcomeDiv.innerHTML = `<p>Bonjour, COCO !</p>`;
-    
-    messagesContainer.appendChild(welcomeDiv);
-}
-
-// Fonction pour supprimer le message de bienvenue
-function removeWelcomeMessage() {
-    const welcomeMessage = document.getElementById('welcome-message');
-    const messagesContainer = document.querySelector('.messages-container');
-    
-    if (welcomeMessage) {
-        welcomeMessage.remove();
-        // Supprimer la classe de centrage
-        messagesContainer.classList.remove('has-welcome');
-    }
-    
-    // Marquer définitivement la conversation comme n'ayant plus le message de bienvenue
-    const activeConversation = conversations.find(conv => conv.id === currentConversation);
-    if (activeConversation) {
-        activeConversation.hasWelcomeMessage = false;
-    }
-}
-
 // Fonction pour mettre à jour la liste des conversations
 function updateConversationsList() {
     const conversationList = document.getElementById('conversation-list');
@@ -472,11 +765,6 @@ function updateConversationsList() {
         conversationList.appendChild(conversationItem);
     });
 }
-
-
-
-
-
 
 // Fonction pour éditer le titre d'une conversation (VERSION MODAL STYLÉE)
 function editConversationTitle(conversationId, event) {
@@ -679,10 +967,6 @@ function editConversationTitle(conversationId, event) {
     }, 50);
 }
 
-
-
-
-
 // Fonction pour supprimer une conversation
 function deleteConversation(conversationId, event) {
     // Empêcher la propagation de l'événement pour éviter de sélectionner la conversation
@@ -766,41 +1050,12 @@ function loadConversationMessages(conversation) {
     scrollToBottom();
 }
 
-
 // Fonction pour vider le conteneur de messages
 function clearMessagesContainer() {
     const messagesContainer = document.querySelector('.messages-container');
     messagesContainer.innerHTML = '';
     // Supprimer la classe de centrage
     messagesContainer.classList.remove('has-welcome');
-}
-
-
-// Modifier la fonction addMessageToUI pour sauvegarder dans la conversation active
-function addMessageToUI(message, type, saveToConversation = true) {
-    // Si c'est un message utilisateur, supprimer le message de bienvenue
-    if (type === 'user') {
-        removeWelcomeMessage();
-    }
-    
-    const messagesContainer = document.querySelector('.messages-container');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}-message`;
-    messageDiv.innerHTML = `<p>${message}</p>`;
-    messagesContainer.appendChild(messageDiv);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    // Sauvegarder le message dans la conversation active
-    if (saveToConversation && currentConversation) {
-        const activeConversation = conversations.find(conv => conv.id === currentConversation);
-        if (activeConversation) {
-            activeConversation.messages.push({
-                content: message,
-                type: type,
-                timestamp: new Date()
-            });
-        }
-    }
 }
 
 // Add CSS for blinking cursor
@@ -813,27 +1068,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Fonction pour basculer la sidebar en mode mobile
-function openMobileSidebar() {
-    sidebarRetracted = true;
-
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.mobile-overlay');
-    
-    sidebar.classList.toggle('mobile-open');
-    overlay.classList.toggle('active');
-}
-
-function closeMobileSidebar() {
-
-    sidebarRetracted = false;
-
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.mobile-overlay');
-    
-    sidebar.classList.remove('mobile-open');
-    overlay.classList.remove('active');
-}
 
 // Afficher le bouton menu sur mobile
 window.addEventListener('resize', function() {
@@ -857,11 +1091,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize when page loads
 window.addEventListener('load', function() {
     restoreSidebarState();
-    updateUI();
     scrollToBottom();
-
-    // Créer une première conversation par défaut
-    createNewConversation();
     
 });
 
