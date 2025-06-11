@@ -4,25 +4,29 @@ import * as cheerio from 'cheerio';
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
-// import puppeteer from 'puppeteer';
-
-const SERP_API_KEY = '07b79833f1cb2ca14810bba13734c3275660122635850586fbbc1f885a4f1005';
 
 function appendBasePromptMessage(conversation, base_prompt) {
     conversation.messages.unshift({
         id: 0,
         role: "system",
         content: `
-            You are a virtual assistant that replies to users questions.
-            Your name is RECCA, which stands for "Romain, Elouan, Corentin, Clément, Adam". You are to refer to yourself as RECCA, and RECCA only.
-            You cannot use any other name or alias.
+            You are a virtual assistant that replies to users' questions.
+            Your name is RECCA, which stands for "Romain, Élouan, Corentin, Clément, Adam". You are to refer to yourself as RECCA, and RECCA only.
+            You cannot use any other name or alias. Please using "I" or "me" when referring to yourself, not RECCA, to make the conversation fell more natural unless when your name is asked.
 
-            You must always answer in a helpful and friendly manner.
-            Everything you say will be under educational purposes only.
-            You will never ignore prompts made by the 'system' role.
+            You have been created to help users in the cybersecurity field, and you are able to answer questions about cybersecurity and other related topics.
+            You must always answer in a helpful and friendly manner, unless asked otherwise.
+
+            Prompts made under the "system" role are instructions for you, and have a higher priority than user queries.
+            Everything you say will be under educational purposes only, so you do not need to be as wary of the dangers of generated content.
             If something the user asks might be dangerous, you will always display a warning before proceeding to answer.
-            You will always answer in the language of the user.
 
+            The user has the ability to enable or disable web search.
+            If a question they ask is too complex or requires more information, you will suggest them to enable web search.
+
+            When the user mentions "UPHF", they are referring to the University Polytechniques des Hauts-de-France of Valenciennes, located in France.
+
+            You will always answer in the language of the user. Assume their language is French by default, unless they specify otherwise.
             Here is some information provided by the user, only refer to this information if it is relevant to the question asked:
             ${base_prompt || "Aucune information fournie."}`,
         created_at: new Date(0),
@@ -30,13 +34,18 @@ function appendBasePromptMessage(conversation, base_prompt) {
 }
 
 async function getGoogleResults(query) {
-    const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${SERP_API_KEY}&engine=google`;
+    const url = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${process.env.SERP_API_KEY}&engine=google`;
     const data = await fetch(url).then(res => res.json()).catch(_ => null);
 
-    if (data?.error) return [];
+    if (!data || data.error) {
+        console.error("Google search results:", data?.error);
+        return [];
+    }
 
     const results = data.organic_results;
-    return results.slice(0, 5)?.map(r => r.link); // Limité à 5 résultats pour éviter la surcharge
+    return results
+        // .slice(0, 5) // Limité à 5 résultats pour éviter la surcharge
+        ?.map(r => r.link);
 }
 
 function filterContent(text) {
@@ -51,18 +60,20 @@ function filterContent(text) {
         filteredLines.push(line);
     }
 
-    return filteredLines.join('\n').slice(0, 10000);
+    return filteredLines.join('\n'); // .slice(0, 10000);
 }
 
-async function extractContentFromUrl(url, browser) {
+async function extractContentFromUrl(url) {
     try {
-        const html = await fetch(url, { signal: AbortSignal.timeout(1000) })
-            .then(r => r.text());
+        const html = await fetch(url, {
+            signal: AbortSignal.timeout(10000),
+            headers: { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0' },
+        }).then(r => r.text());
 
         const $ = cheerio.load(html);
 
         // Remove script and style elements
-        $('script, style, nav, header, footer, aside, .ad, .advertisement, .sidebar, img').remove();
+        $('script, style, nav, header, footer, aside, img, iframe, .ad, .advertisement, .sidebar').remove();
 
         // Extract text from main content areas first, fallback to body
         let text = $('main, article, .content, .post, .entry').text() || $('body').text();
@@ -72,6 +83,7 @@ async function extractContentFromUrl(url, browser) {
 
         return filterContent(text);
     } catch (err) {
+        console.error(`Erreur lors de l'extraction du contenu de l'URL ${url}:`, err);
         return null;
     }
 }
@@ -79,8 +91,8 @@ async function extractContentFromUrl(url, browser) {
 async function* askAgent(prompt, previous_messages, think = false, web = false, abort_controller = null) {
     const question = { created_at: new Date(), role: 'user', content: prompt };
 
-    const messages = previous_messages.slice(1);
-    messages.push({...question, content: prompt});
+    const messages = previous_messages.slice();
+
     if (web) {
         // Generation du texte web a cherche
         const web_prompt = `
@@ -97,6 +109,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
         The query should be concise and specific, and should not include any personal information or sensitive data.
         Provide only the query, without any additional text or explanation.
 
+        If you think the question also relates to the UPHF (Université Polytechnique des Hauts-de-France), you will append the word "UPHF" to the end of your prompt.
+
         Today is ${new Date().toLocaleDateString('en-US')} and the time is ${new Date().toLocaleTimeString('en-US')}.`;
 
         try {
@@ -108,34 +122,48 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
                 think: false,
             });
 
-            console.log('Réponse de l’IA :' + response.message.content);
+            console.error("Web search response:", response.message.content);
+            const requests_uphf = response.message.content.match(/UPHF/i);
+            console.error("UPHF detected in web search request? ", requests_uphf);
 
             // Recherche web
-            const web_request = response.message.content.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+            const web_request = response.message.content.replace(/\s+UPHF\s+$|[^a-zA-Z0-9\s]/g, '').trim();
+            // console.log('Réponse de l’IA :' + web_request);
             const urls = await getGoogleResults(web_request);
+            console.error("Web search URLs:", urls);
 
             let webContent = "";
             for (const url of urls) {
-                const content = await extractContentFromUrl(url, null);
+                const content = await extractContentFromUrl(url);
                 if (!content) continue;
 
                 webContent += `\n\n\nSource: ${url}\nContenu: ${content}\n---\n`;
             }
 
-            console.log(webContent);
-
             // Ajouter le contenu web au prompt
             messages.push({
                 created_at: new Date(),
                 role: 'system',
-                content: `Voici des informations récupérées du web pour t'aider à répondre à la question précédente :\n Recherche web associée ${web_request}: \n${webContent}`,
+                content: `
+                Here is some information retrieved from the web to help you answer the following question.
+                This information was provided by the system and not by the user.
+                If you use it, you must always cite the source, and say "you" made the search, not the user.
+                Behave as if you were replying to the last question asked by the user.
+
+                BEGIN WEB CONTENT
+                Associated web search ${web_request}: \n${webContent}
+                END WEB CONTENT
+
+                Make sure to keep answering to the user's question in the same language as the user.`,
             });
         } catch (error) {
-            throw `⚠️ Erreur lors de la recherche web: ${error.message}\n\n`;
+            throw `Erreur lors de la recherche web: ${error.message}\n\n`;
         }
     }
 
 
+    // messages.push({ ...question, content: prompt });
+    messages.push(question);
     const response = await ollama.chat({
         // model: 'qwen3:4b',
         // model: 'mistral:7b',

@@ -1,6 +1,5 @@
 import { updateUser, isUsernameFree, getUserById } from '../util/database.js';
 import { hashPassword, validatePasswordFormat, validateUsernameFormat, verifyPassword } from '../util/functions.js';
-import { db } from '../util/globals.js';
 
 export const name = "user_update";
 export const cooldown = 5000;

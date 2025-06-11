@@ -383,6 +383,35 @@
             margin-bottom: 15px;
             border: 1px solid #f5c6cb;
         }
+
+        .web-search-toggle {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 10px;
+            flex-shrink: 0;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+        }
+
+        .web-search-toggle.active {
+            background-color: #28a745;
+        }
+
+        .web-search-toggle:hover {
+            background-color: #5a6268;
+        }
+
+        .web-search-toggle.active:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 
@@ -420,6 +449,10 @@
             </div>
 
             <div class="input-area">
+                <button id="web-search-toggle" class="web-search-toggle" onclick="toggleWebSearch()"
+                    title="Enable/Disable Web Search">
+                    🌐 Web
+                </button>
                 <input type="text" id="message-input" placeholder="Type your message..." disabled>
                 <button id="send-btn" onclick="sendMessage()" disabled>Send</button>
             </div>
@@ -474,6 +507,7 @@
         let isAuthenticated = false;
         let currentResponse = '';
         let conversations = [];
+        let webSearchEnabled = false;
 
         // Initialize socket connection
         function initSocket() {
@@ -519,6 +553,8 @@
                         addMessage('assistant', currentResponse);
                         currentResponse = '';
                     }
+                    // Re-enable send button after response is complete
+                    document.getElementById('send-btn').disabled = false;
                     updateUI();
                 } else {
                     // Streaming token
@@ -592,10 +628,15 @@
             const messageInput = document.getElementById('message-input');
             const sendBtn = document.getElementById('send-btn');
             const userSettingsBtn = document.getElementById('user-settings-btn');
+            const webToggleBtn = document.getElementById('web-search-toggle');
 
             // loginBtn.disabled = isAuthenticated;
             messageInput.disabled = !currentConversation;
             sendBtn.disabled = !currentConversation;
+
+            if (webToggleBtn) {
+                webToggleBtn.disabled = !currentConversation;
+            }
 
             // Show user settings button when authenticated
             if (userSettingsBtn) {
@@ -811,6 +852,21 @@
             }
         });
 
+        function toggleWebSearch() {
+            webSearchEnabled = !webSearchEnabled;
+            const toggleBtn = document.getElementById('web-search-toggle');
+
+            if (webSearchEnabled) {
+                toggleBtn.classList.add('active');
+                toggleBtn.title = 'Web Search Enabled - Click to disable';
+                log('Web search enabled', 'received');
+            } else {
+                toggleBtn.classList.remove('active');
+                toggleBtn.title = 'Web Search Disabled - Click to enable';
+                log('Web search disabled', 'received');
+            }
+        }
+
         function sendMessage() {
             const input = document.getElementById('message-input');
             const message = input.value.trim();
@@ -820,8 +876,8 @@
             // Clear any existing streaming message before sending new message
             removeStreamingMessage();
 
-            log('Sending query: ' + message, 'sent');
-            socket.emit('query', currentConversation.id, message, false);
+            log('Sending query: ' + message + (webSearchEnabled ? ' (with web search)' : ''), 'sent');
+            socket.emit('query', currentConversation.id, message, webSearchEnabled);
 
             addMessage('user', message);
             input.value = '';
