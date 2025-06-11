@@ -583,6 +583,7 @@ hr {
 }
 
 /* SCROLLBARS */
+/* SCROLLBARS */
 .conversation-list::-webkit-scrollbar,
 .messages-container::-webkit-scrollbar {
     width: 6px;
@@ -800,5 +801,15 @@ hr {
 
     .welcome-message p {
         font-size: 20px; 
+    }
+
+    .edit-conversation-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .delete-conversation-btn {
+        opacity: 1;
+        visibility: visible;
     }
 }

@@ -1,7 +1,8 @@
-import fs from 'fs';
 import * as cheerio from 'cheerio';
 
 import { pbkdf2Sync, randomBytes } from 'crypto'
+import { readdirSync, readFileSync } from 'fs';
+
 import { ollama } from './globals.js';
 import { getConversationMessages, isTokenValid } from './database.js';
 
@@ -93,6 +94,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
 
     const messages = previous_messages.slice();
 
+    console.log("Asking agent with prompt:", prompt, "web search enabled:", web, "think enabled:", think);
+
     if (web) {
         // Generation du texte web a cherche
         const web_prompt = `
@@ -109,21 +112,21 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
         The query should be concise and specific, and should not include any personal information or sensitive data.
         Provide only the query, without any additional text or explanation.
 
-        If you think the question also relates to the UPHF (Université Polytechnique des Hauts-de-France), you will append the word "UPHF" to the end of your prompt.
+        If you think the question also relates to the UPHF (Université Polytechnique des Hauts-de-France) or the INSA (Institut National des Sciences Appliquées) HdF (Hauts-de-France), you will make sure that the word "UPHF" is included in the query.
 
         Today is ${new Date().toLocaleDateString('en-US')} and the time is ${new Date().toLocaleTimeString('en-US')}.`;
 
         try {
-            const web_question = { created_at: new Date(), role: 'user', content: web_prompt };
+            const web_question = { created_at: new Date(), role: 'system', content: web_prompt };
             const response = await ollama.chat({
                 model: 'gemma3:4b',
-                messages: [web_question],
+                messages: [...messages, web_question],
                 stream: false,
                 think: false,
             });
 
             console.error("Web search response:", response.message.content);
-            const requests_uphf = response.message.content.match(/UPHF/i);
+            const requests_uphf = response.message.content.match(/\s(UPHF|INSA)\s/i);
             console.error("UPHF detected in web search request? ", requests_uphf);
 
             // Recherche web
@@ -140,19 +143,42 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
                 webContent += `\n\n\nSource: ${url}\nContenu: ${content}\n---\n`;
             }
 
+            let files_content = "";
+            if (requests_uphf) {
+                const files = readdirSync('data');
+                for (const file of files) {
+                    console.error("Processing file:", file);
+                    if (!file.endsWith('.txt')) continue;
+
+                    files_content += `Content of file "${file}":\n`;
+                    files_content += readFileSync(`data/${file}`, 'utf-8');
+                    files_content += `\n\n`;
+                }
+
+                console.log("Files content:", files_content);
+            }
+
             // Ajouter le contenu web au prompt
             messages.push({
                 created_at: new Date(),
                 role: 'system',
                 content: `
-                Here is some information retrieved from the web to help you answer the following question.
+                Here is some information retrieved from the web, and potentially important files to help you answer the following question.
                 This information was provided by the system and not by the user.
-                If you use it, you must always cite the source, and say "you" made the search, not the user.
-                Behave as if you were replying to the last question asked by the user.
+                If you use it, you will say that you made the search, as it was not provided by the user.
+                Behave as if you were replying to the next question asked by the user.
 
-                BEGIN WEB CONTENT
-                Associated web search ${web_request}: \n${webContent}
-                END WEB CONTENT
+                <web_request>${web_request}
+                BEGIN WEB RESPONSE
+                ${webContent}
+                END WEB CONTENT</web_request>
+
+                ${files_content ? `
+                <files> THE FOLLOWING FILES IN FRENCH ARE ABOUT THE UPHF AND INSA
+
+                ${files_content}
+
+                END OF THE INSA/UPHF FILES</files>` : ''}
 
                 Make sure to keep answering to the user's question in the same language as the user.`,
             });
@@ -242,9 +268,11 @@ async function loadConversationMessages(conversation) {
 }
 
 function loadDotEnv() {
-    const data = fs.readFileSync('.env', 'utf8');
+    const data = readFileSync('.env', 'utf8');
     const lines = data.split('\n');
     for (const line of lines) {
+        if (line.trim()[0] === '#') continue; // Ignore comments
+
         const [key, value] = line.split('=');
         if (key && value) {
             process.env[key.trim()] = value.trim();

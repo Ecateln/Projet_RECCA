@@ -1,0 +1,23 @@
+LES BONNES PRATIQUES DE LA
+CYBERSÉCURITÉ
+numerique.uphf.fr
+Ne révélez jamais votre mot de passe,
+il est personnel et personne ne vous
+le demandera
+Confidentialité
+N’ouvrez pas les mails dont vous ne
+connaissez pas l’émetteur et changez
+votre mot de passe si vous pensez
+qu'il a fuité
+Prudence
+Pensez à faire des sauvegardes
+régulières grâce au
+cloud de l'Université
+Prévention
+Verrouillez votre accès lorsque
+vous vous éloignez de votre
+ordinateur
+Sécurité
+En cas de doute, prévenez le responsable de la sécurité des
+systèmes d'information en envoyant
+un mail à rssi@uphf.fr
