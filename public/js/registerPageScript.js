@@ -275,3 +275,17 @@ function verifyRegister() {
             .catch(() => createErrorNotification("Une erreur est survenue lors de l'inscription."));
     });
 }
+
+// Function to handle the Enter key for register
+document.addEventListener('DOMContentLoaded', function () {
+    const messageInput = document.getElementById('register');
+
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                verifyRegister();
+            }
+        });
+    }
+});

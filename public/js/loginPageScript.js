@@ -373,3 +373,18 @@ function login() {
 
 // Event listener to check URL parameters when the page loads
 window.addEventListener('DOMContentLoaded', checkUrlParameters);
+
+
+// Function to handle the Enter key for login
+document.addEventListener('DOMContentLoaded', function () {
+    const messageInput = document.getElementById('password');
+
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                login();
+            }
+        });
+    }
+});
