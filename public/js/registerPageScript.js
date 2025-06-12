@@ -278,7 +278,7 @@ function verifyRegister() {
 
 // Function to handle the Enter key for register
 document.addEventListener('DOMContentLoaded', function () {
-    const messageInput = document.getElementById('register');
+    const messageInput = document.getElementById('confirmPassword');
 
     if (messageInput) {
         messageInput.addEventListener('keydown', function (event) {
