@@ -301,7 +301,7 @@ function validateUsernameFormat(username) {
     if (username.length < 2 || username.length > 32)
         return { error: 'La longueur du nom d\'utilisateur doit être comprise entre 2 et 32 caractères.' };
 
-    if (!/^[a-zA-Z0-9_- ]+$/.test(username))
+    if (!/^[a-zA-Z0-9_\- ]+$/.test(username))
         return { error: 'Le nom d\'utilisateur ne doit contenir que des lettres, des chiffres et des tirets.' };
 
     return null;
