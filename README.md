@@ -32,7 +32,7 @@ Projet_Recca/<br/><br/>
 │   &emsp;└── html/<br/>
 │       &emsp;&emsp;└── loginPage.html<br/>
 │       &emsp;&emsp;└── registerPage.html<br/>
-│       &emsp;&emsp;└── temp_chat.html<br/>
+│       &emsp;&emsp;└── chatBotPage.html<br/>
 │   &emsp;└── img/<br/>
 │       &emsp;&emsp;└── FondAvecLogo.png<br/>
 │   &emsp;└── js/<br/>
