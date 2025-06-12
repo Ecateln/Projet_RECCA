@@ -769,6 +769,11 @@ function initSocket() {
         console.log('Received conversation:', conversation.title);
         currentConversation = conversation;
         loadConversationMessages(conversation);
+
+        // Close the sidebar if we are on mobile
+        if(window.innerWidth < 600) {
+            closeMobileSidebar();
+        }
     });
 
     socket.on('res', (token) => {
