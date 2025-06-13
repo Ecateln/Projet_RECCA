@@ -121,7 +121,7 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
         try {
             const web_question = { created_at: new Date(), role: 'system', content: web_prompt };
             const response = await ollama.chat({
-                model: 'gemma3:4b',
+                model: process.env.OLLAMA_MODEL,
                 messages: [...messages, web_question],
                 stream: false,
                 think: false,
@@ -132,7 +132,7 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
             console.log("UPHF detected in web search request? ", requests_uphf);
 
             // Recherche web
-            const web_request = response.message.content.replace(/\s+UPHF\s+$|[^a-zA-Z0-9\s]/g, '').trim();
+            const web_request = response.message.content.replace(/[^a-zA-Z0-9\s]/g, '').trim();
             // console.log('Réponse de l’IA :' + web_request);
             const urls = await getGoogleResults(web_request);
             console.log("Web search URLs:", urls);
@@ -158,6 +158,7 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
             }
 
             // Ajouter le contenu web au prompt
+            console.log("Sending web-enhanced prompt");
             messages.push({
                 created_at: new Date(),
                 role: 'system',
@@ -173,7 +174,7 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
                 END WEB CONTENT</web_request>
 
                 ${files_content ? `
-                <files> THE FOLLOWING FILES IN FRENCH ARE ABOUT THE UPHF AND INSA
+                <files> THE FOLLOWING FILES ARE IN FRENCH AND CONTAIN INFORMATION ABOUT THE UPHF AND INSA
 
                 ${files_content}
 
@@ -189,10 +190,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
     } else messages.push(question);
 
     const response = await ollama.chat({
-        // model: 'qwen3:4b',
-        // model: 'mistral:7b',
-
-        model: 'gemma3:4b',
+        model: process.env.OLLAMA_MODEL,
+        keep_alive: "4h",
         stream: true,
         messages,
         think,
