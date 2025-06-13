@@ -888,7 +888,7 @@ function saveUserSettings() {
         updates.password = newPasswordInput;
         updates.old_password = currentPasswordInput;
     }
-    if (personalizationInput) updates.personalization_info = personalizationInput;
+    if (personalizationInput !== undefined) updates.personalization_info = personalizationInput;
 
     // Check if at least one field is filled
     if (Object.keys(updates).length === 0) {
