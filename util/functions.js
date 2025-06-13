@@ -127,8 +127,8 @@ async function* askAgent(prompt, previous_messages, think = false, web = false, 
             });
 
             console.log("Web search response:", response.message.content);
-            const requests_uphf = response.message.content.match(/\s(UPHF|INSA)\s/i);
-            console.log("UPHF detected in web search request? ", requests_uphf);
+            const requests_uphf = response.message.content.match(/(UPHF|INSA)/i);
+            console.log("UPHF detected in web search request? ", !!requests_uphf);
 
             // Recherche web
             const web_request = response.message.content.replace(/[^a-zA-Z0-9\s]/g, '').trim();
