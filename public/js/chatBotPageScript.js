@@ -1006,7 +1006,7 @@ function updateConversationsList() {
         const noConversations = document.createElement('div');
         noConversations.style.color = '#666';
         noConversations.style.fontStyle = 'italic';
-        noConversations.textContent = 'Aucune conversation disponible';
+        noConversations.textContent = 'Aucune conversation pour le moment';
         conversationList.appendChild(noConversations);
     }
 }
