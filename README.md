@@ -14,7 +14,7 @@ Ce projet propose un **chatbot spécialisé en cybersécurité** utilisant **Oll
 
 ##  Architecture du projet
 
-Projet_Recca/<br/><br/>
+**Projet_Recca/** <br/>
 │── events/ <br/>
 │   &emsp;└── .sample/<br/>
 │   &emsp;└── conversation_create.js<br/>
@@ -52,13 +52,13 @@ Projet_Recca/<br/><br/>
 │── package-lock.json<br/>
 │── package.json<br/>
 <br/>
-Branches dans ce git :<br/>
+**Branches dans ce git :**<br/>
 │── main<br/>
-│   &emsp;└── login_page<br/>
-│   &emsp;└── chatbot_page<br/>
-│   	&emsp;&emsp;└── responsive<br/>
-│   	&emsp;&emsp;└── JS_modifications<br/>
-│   &emsp;└── merge_front_back<br/>
+    &emsp;└── login_page<br/>
+    &emsp;└── chatbot_page<br/>
+    	&emsp;&emsp;└── responsive<br/>
+    	&emsp;&emsp;└── JS_modifications<br/>
+    &emsp;└── merge_front_back<br/>
 
 
 ---
@@ -87,7 +87,7 @@ Branches dans ce git :<br/>
 Une fois le modèle sélectionné, ouvrez un terminal :
 </br>
 </br>
-Téléchargez le modèle en executant : ollama pull nom_du_modele
+Téléchargez le modèle en executant : `ollama pull <nom_du_modele>`
 
 Ex :
 ```
@@ -104,7 +104,7 @@ ollama run deepseek-r1
 > Aide : Appuyez sur Ctrl+D pour sortir de la console de prompt
 
 </br>
-Pour rendre votre modèle disponible sur un port de votre pc exécutez : ollama serve nom_du_modele 
+Pour rendre votre modèle disponible sur un port de votre pc exécutez: `ollama serve nom_du_modele`
 
 Ex : 
 ```
@@ -135,20 +135,20 @@ cd Projet_RECCA.git
 - Cliquez sur le bouton vert < > Code sur l'accueil du projet GitHub.</br>
 - Télécharger le fichier zip</br> 
 - Dézipper le fichier dans le repertoire cible</br>
-- Ouvrez le dossier Projet_RECCA </br>
 </br>
-⚠ Attention, il est necessaire de modifier le fichier .env fournit car il ne comporte que des valeurs par défaut non adaptées à un usage instantané.
+
+### Pour lancer le serveur :
+
+Avant de lancer le serveur, il faut copier le fichier `.env.template` vers `.env`, et en modifier le contenu, qui ne comporte que des valeurs par défaut non adaptées à un usage instantané.
 Consultez le fichier pour découvrir les différentes valeurs à renseigner.
 </br><br/>
-
-**Pour lancer le serveur :**
 
 Dans un terminal de commande (ouvert dans le dossier Projet_RECCA) exécutez : 
 </br>
 
 ```
 node index.js
-```
+```  
 Votre Chatbot est maintenant disponible sur votre serveur !!! 
 
 
